@@ -33,7 +33,7 @@ class RabbitMQConnector:
         return decorator
 
     async def start_consume(self):
-
+        print('Start consuming ...')
         await self.connect()
         for exchange, queue, exchange_type, func in self.handlers:
             exchange_object:AbstractExchange = await self.channel.declare_exchange(name=exchange, type=exchange_type)
