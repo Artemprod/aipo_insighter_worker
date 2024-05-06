@@ -66,6 +66,7 @@ async def transcribe_storage_file(file_url: str):
     ).json()
 
 
+
 if __name__ == '__main__':
     async def main():
         url = "https://www.youtube.com/watch?v=HK5BRAApMp8"
