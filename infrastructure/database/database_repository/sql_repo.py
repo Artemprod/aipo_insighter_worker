@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from contextlib import asynccontextmanager
-from domain.enteties.databse_enteties.sql_ent import TranscribedText, SummaryText
+from domain.enteties.databse_enteties.tranascribed_text_model import
 
 
 class ResultsRepository:
@@ -39,7 +39,7 @@ class ResultsRepository:
             finally:
                 await session.close()
 
-    async def save_transcribed_text(self, text: str, addressee: str) -> None:
+    async def save_transcribed_text(self, text: str, addressee: str):
         """
         Асинхронное сохранение транскрибированного текста в базу данных.
         """
@@ -67,6 +67,8 @@ class ResultsRepository:
             query = select(SummaryText).where(SummaryText.id == result_id)
             results = await session.execute(query)
             result = results.scalars().first()  # Получаем первый объект из результатов запроса
+            print()
+            print(result)
             return result
 
 
@@ -76,6 +78,7 @@ if __name__ == "__main__":
         a = ResultsRepository(database_url=url)
         await a.save_transcribed_text(text="Транскрибированый текст", addressee='123',)
         await a.save_summary_text(text="Саммари текст", addressee='123',)
+        await a.get_summary_text_by_id(result_id=20)
 
 
 

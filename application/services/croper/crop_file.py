@@ -2,7 +2,7 @@ import asyncio
 from pydub import AudioSegment
 
 
-async def crop_file(file_path, output_path, chunk_lents_seconds=15):
+async def crop_file(file_path, output_path, chunk_lents_seconds= 60 * 10):
     paths = []
     duration= chunk_lents_seconds * 1000
     sound = AudioSegment.from_file(file_path)

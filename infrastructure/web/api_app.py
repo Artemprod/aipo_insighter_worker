@@ -71,7 +71,6 @@ async def get_summary_text_from_database(id_text: int):
     try:
         text = await postgres_database_repository.get_summary_text_by_id(result_id=id_text)
         if text is not None:
-
             return {"text":text.text }
         else:
             raise HTTPException(status_code=404, detail="Text not found")

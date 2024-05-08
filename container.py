@@ -10,5 +10,5 @@ whisper_config = load_whisper_configs()
 listener = RabbitMQConnector('rmuser', 'rmpassword', 'localhost')
 publisher = WorkerPublisher("nats://demo.nats.io:4222")
 whisper_client = WhisperClient(conf=whisper_config)
-postgres_database_repository = ResultsRepository(database_url="postgresql+asyncpg://postgres:1234@localhost:5432/postgres")
+postgres_database_repository = ResultsRepository(database_url="postgresql+asyncpg://postgres:1234@localhost:5432/transcribed_text")
 

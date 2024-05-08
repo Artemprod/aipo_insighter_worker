@@ -32,7 +32,7 @@ async def download_file(url, path: str):
     return r"C:\Users\artem\OneDrive\Рабочий стол\Тестовые данные\WEBM mini.webm"
 
 
-@publisher.publish(queue="foo")
+@publisher.publish(queue="transcribe")
 async def transcribe_youtube_video(youtube_url: str) ->str:
     # скачать файл
     # TODO Поставить временный файлы
@@ -50,7 +50,7 @@ async def transcribe_youtube_video(youtube_url: str) ->str:
     ).json()
 
 
-@publisher.publish(queue="foo")
+@publisher.publish(queue="transcribe")
 async def transcribe_storage_file(file_url: str):
     # TODO Поставить временный файлы
     file = await download_file(url=file_url,

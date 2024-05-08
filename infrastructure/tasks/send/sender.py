@@ -18,7 +18,7 @@ class WorkerPublisher:
                 await nc.publish(queue, str(result).encode())  # Убедитесь, что данные в формате bytes
                 print('send to adress')
                 await nc.close()
-
+                return result
             return wrapper
 
         return decorator
