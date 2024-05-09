@@ -3,22 +3,24 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 
+
 @dataclass
 class Currency:
-    id: int
     name: str
     code: str
+    id: Optional[int] = None
+
 
 @dataclass
 class Pricing:
-    id: int
     model_id: int
     cost_per_token: Decimal
     currency_id: int
+    id: Optional[int] = None
+
 
 @dataclass
 class SummaryText:
-    id: int
     summary_text: str
     transcribed_text_id: int
     user_id: int
@@ -27,27 +29,31 @@ class SummaryText:
     generation_time: datetime
     tokens_requested: int
     tokens_generated: int
+    id: Optional[int] = None
+
 
 @dataclass
 class Format:
-    id: int
     format_name: str
+    id: Optional[int] = None
+
 
 @dataclass
 class Source:
-    id: int
     source_name: str
+    id: Optional[int] = None
     domain: Optional[str] = None
+
 
 @dataclass
 class Model:
-    id: int
     name: str
     version: str
+    id: Optional[int] = None
+
 
 @dataclass
 class File:
-    id: int
     source_id: int
     link: str
     format_id: int
@@ -55,10 +61,11 @@ class File:
     file_size: int
     owner_id: int
     upload_date: datetime
+    id: Optional[int] = None
+
 
 @dataclass
 class TranscribedText:
-    id: int
     text: str
     initiator_user_id: int
     file_id: int
@@ -66,31 +73,38 @@ class TranscribedText:
     transcription_time: datetime
     model_id: int
     language_code: str
+    id: Optional[int] = None
+    text_record:Optional[int] = None
     tags: Optional[str] = None
+
+
+
 
 @dataclass
 class AIAssistant:
-    assistant_id: int
     assistant: str
     name: str
     assistant_prompt: str
     user_prompt: str
     user_prompt_for_chunks: Optional[str] = None
     created_at: Optional[datetime] = None
+    assistant_id: Optional[int] = None
+
 
 @dataclass
 class Status:
-    id: int
     status_name: str
+    id: Optional[int] = None
+
 
 @dataclass
 class Stage:
-    id: int
     stage_name: str
+    id: Optional[int] = None
+
 
 @dataclass
 class WorkerStatus:
-    id: int
     stage_id: int
     assistant_id: int
     status_id: int
@@ -101,3 +115,4 @@ class WorkerStatus:
     end_time: Optional[datetime]
     error_time: Optional[datetime]
     error_message: Optional[str]
+    id: Optional[int] = None
