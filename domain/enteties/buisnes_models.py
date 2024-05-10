@@ -74,7 +74,6 @@ class TranscribedText:
     model_id: int
     language_code: str
     id: Optional[int] = None
-    text_record:Optional[int] = None
     tags: Optional[str] = None
 
 

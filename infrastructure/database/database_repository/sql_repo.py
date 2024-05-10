@@ -102,7 +102,6 @@ class TranscribedTextRepository(BaseRepository):
                     transcription_time=result.transcription_time,
                     model_id=result.model_id,
                     language_code=result.language_code,
-                    text_record=result.transcribed_text,
                     tags=result.tags,
                 )
             return None
