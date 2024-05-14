@@ -1,10 +1,8 @@
-from fastapi import FastAPI
-
 from configs import load_whisper_configs
-# from infrastructure.api.openai_api.whisper import WhisperClient
+# from infrastructure.api.openai_api_package.whisper_package import WhisperClient
 
-from infrastructure.tasks.listen.listener import RabbitMQConnector
-from infrastructure.tasks.send.sender import WorkerPublisher
+from src.consumers.app.listener import RabbitMQConnector
+from src.publishers.sender import WorkerPublisher
 
 whisper_config = load_whisper_configs()
 listener = RabbitMQConnector('rmuser', 'rmpassword', 'localhost')
