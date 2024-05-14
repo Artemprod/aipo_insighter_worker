@@ -9,7 +9,7 @@ if __name__ == '__main__':
     from sqlalchemy.orm import sessionmaker
 
 
-    DATABASE_URL = "postgresql+asyncpg://postgres:1234@localhost:5432/text_process"
+    DATABASE_URL = ****
     engine = create_async_engine(DATABASE_URL, echo=True)
     Session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 

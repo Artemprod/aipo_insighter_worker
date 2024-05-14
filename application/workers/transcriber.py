@@ -24,8 +24,8 @@ async def transcribe(file_path):
     # ОТправить в виспер
     result = await total_transcribe(files)
     # сохранить результат в базу данных и вернуть id записи
-    record_id = await postgres_database_repository.save_transcribed_text(text=result,addressee=None)
-    return record_id
+
+    return result
 
 
 async def download_file(url, path: str):
@@ -39,7 +39,10 @@ async def transcribe_youtube_video(youtube_url: str) ->str:
     file = await download_video_from_youtube(youtube_url=youtube_url,
                                              path=r"D:\projects\AIPO_V2\insighter_worker\temp")  # использует агента скачивания
     print('downloaded')
-    record_id: int = await transcribe(file)
+    transcribed_text: str = await transcribe(file)
+
+    record_id = await postgres_database_repository.save_transcribed_text(text=transcribed_text, addressee=None)
+
 
     # преообразовать в данные для отправки
 

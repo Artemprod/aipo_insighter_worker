@@ -1,16 +1,14 @@
-import asyncio
 
-from datetime import timedelta, datetime
 
 from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP, BigInteger, CHAR, Text, DECIMAL, TIME
 from sqlalchemy.dialects.postgresql import INTERVAL
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-Base = declarative_base()
+ModelBase = declarative_base()
 
 
-class Currencies(Base):
+class Currencies(ModelBase):
     __tablename__ = 'currencies'
 
     id = Column(Integer, primary_key=True)
@@ -25,7 +23,7 @@ class Currencies(Base):
         }
 
 
-class Pricing(Base):
+class Pricing(ModelBase):
     __tablename__ = 'pricing'
 
     id = Column(Integer, primary_key=True)
@@ -45,7 +43,7 @@ class Pricing(Base):
         }
 
 
-class SummaryTexts(Base):
+class SummaryTexts(ModelBase):
     __tablename__ = 'summary_texts'
 
     id = Column(BigInteger, primary_key=True)
@@ -75,7 +73,7 @@ class SummaryTexts(Base):
         }
 
 
-class Formats(Base):
+class Formats(ModelBase):
     __tablename__ = 'formats'
 
     id = Column(Integer, primary_key=True)
@@ -85,7 +83,7 @@ class Formats(Base):
         return {'id': self.id, 'format_name': self.format_name}
 
 
-class Sources(Base):
+class Sources(ModelBase):
     __tablename__ = 'sources'
 
     id = Column(Integer, primary_key=True)
@@ -96,7 +94,7 @@ class Sources(Base):
         return {'id': self.id, 'source_name': self.source_name, 'domain': self.domain}
 
 
-class Models(Base):
+class Models(ModelBase):
     __tablename__ = 'models'
 
     id = Column(Integer, primary_key=True)
@@ -107,7 +105,7 @@ class Models(Base):
         return {'id': self.id, 'name': self.name, 'version': self.version}
 
 
-class Files(Base):
+class Files(ModelBase):
     __tablename__ = 'files'
 
     id = Column(BigInteger, primary_key=True)
@@ -135,7 +133,7 @@ class Files(Base):
         }
 
 
-class TranscribedTexts(Base):
+class TranscribedTexts(ModelBase):
     __tablename__ = 'transcribed_texts'
 
     id = Column(BigInteger, primary_key=True)
@@ -165,7 +163,7 @@ class TranscribedTexts(Base):
         }
 
 
-class AIAssistant(Base):
+class AIAssistant(ModelBase):
     __tablename__ = "ai_assistants"
 
     assistant_id = Column(Integer, primary_key=True, autoincrement=True)
@@ -180,7 +178,7 @@ class AIAssistant(Base):
         return f"<AIAssistant(assistant_id={self.assistant_id}, assistant='{self.assistant}', name='{self.name}')>"
 
 
-class Status(Base):
+class Status(ModelBase):
     __tablename__ = "statuses"
 
     id = Column(Integer, primary_key=True)
@@ -190,7 +188,7 @@ class Status(Base):
         return f"<Status(id={self.id}, status_name='{self.status_name}')>"
 
 
-class Stage(Base):
+class Stage(ModelBase):
     __tablename__ = "stages"
 
     id = Column(Integer, primary_key=True)
@@ -200,7 +198,7 @@ class Stage(Base):
         return f"<Stage(id={self.id}, stage_name='{self.stage_name}')>"
 
 
-class WorkerStatus(Base):
+class WorkerStatus(ModelBase):
     __tablename__ = "worker_statuses"
 
     id = Column(Integer, primary_key=True)
