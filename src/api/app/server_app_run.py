@@ -1,7 +1,7 @@
 #__run fast api application __
+from src.database.engine.session_maker import DatabaseSessionManager
+from src.database.repositories.storage_container import Repositories
 
-from src.database.repositories.repositories import Repositories
-from src.database.repositories.sql_repo import DatabaseSessionManager
 from src.api.app.initialize.server_creator import create_server
 import uvicorn
 

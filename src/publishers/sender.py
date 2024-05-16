@@ -1,6 +1,5 @@
 import asyncio
 from functools import wraps
-
 import nats
 
 

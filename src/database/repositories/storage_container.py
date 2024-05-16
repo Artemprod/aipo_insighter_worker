@@ -1,6 +1,8 @@
-
-from src.database.repositories.sql_repo import TranscribedTextRepository, SummaryTextRepository, \
-    AssistantRepository, WorkerStatusRepository, DatabaseSessionManager
+from src.database.engine.session_maker import DatabaseSessionManager
+from src.database.repositories.asssistant_repository import AssistantRepository
+from src.database.repositories.summary_text_repository import SummaryTextRepository
+from src.database.repositories.transcribed_text_repository import TranscribedTextRepository
+from src.database.repositories.work_status_repository import WorkerStatusRepository
 
 
 class Repositories:

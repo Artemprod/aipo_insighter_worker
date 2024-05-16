@@ -1,7 +1,15 @@
 from datetime import datetime, timedelta
 
-from src.database.models.text_process_models import Currencies, Formats, Sources, Models, AIAssistant, \
-    Files, Status, WorkerStatus, Stage
+from src.database.models.consumption.asssistant import AIAssistant
+from src.database.models.consumption.conusumption_status import WorkerStatus
+from src.database.models.payment.currencie import Currencies
+from src.database.models.utils.files import Files
+from src.database.models.utils.formats import Formats
+from src.database.models.utils.models import Models
+from src.database.models.utils.sources import Sources
+from src.database.models.utils.stage import Stage
+from src.database.models.utils.status import Status
+
 
 if __name__ == '__main__':
 
@@ -9,7 +17,7 @@ if __name__ == '__main__':
     from sqlalchemy.orm import sessionmaker
 
 
-    DATABASE_URL = ****
+    DATABASE_URL = "****"
     engine = create_async_engine(DATABASE_URL, echo=True)
     Session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 

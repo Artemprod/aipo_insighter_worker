@@ -2,9 +2,10 @@ import asyncio
 
 from aio_pika import IncomingMessage
 
-from src.pipelines.worker_piplines import youtube_pipline
+
 from container import listener
 from src.api.models.post_request_models.start_process import StartFromYouTubeMessage
+from src.pipelines.youtube_pipeline import youtube_pipline
 
 
 @listener.consume('processor', 'transcribe_from_youtube_queue')

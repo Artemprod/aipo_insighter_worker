@@ -7,16 +7,17 @@ from aio_pika.abc import AbstractRobustConnection, AbstractRobustChannel, Abstra
 
 
 class RabbitMQConnector:
-    def __init__(self, username, password, rabbit_host='localhost'):
+    def __init__(self, username, password, port, rabbit_host='localhost'):
         self.username = username
         self.password = password
+        self.port = port
         self.rabbit_host = rabbit_host
         self.handlers = []
 
     async def connect(self):
         # Establish connection to RabbitMQ
         self.connection: AbstractRobustConnection = await aio_pika.connect_robust(
-            f"amqp://{self.username}:{self.password}@{self.rabbit_host}"
+            f"amqp://{self.username}:{self.password}@{self.rabbit_host}:{self.port}"
         )
         self.channel: AbstractRobustChannel = await self.connection.channel()
         return self.connection
