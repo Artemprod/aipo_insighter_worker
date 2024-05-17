@@ -3,7 +3,7 @@ from src.consumption.app.listener import RabbitMQConnector
 
 
 
-from src.publishers.sender import WorkerPublisher
+from src.publishers.publisher import WorkerPublisher
 
 whisper_config = load_whisper_configs()
 listener = RabbitMQConnector('guest', 'guest', 5672,rabbit_host='localhost')

@@ -8,9 +8,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import CharacterTextSplitter
 
-from container import publisher, postgres_database_repository
-from domain.enteties.IOdataenteties.queue_enteties import TranscribedTextId
-from domain.enteties.databse_enteties.tranascribed_text_model import TranscribedText
+
 
 
 class DocumentSummarizer:
@@ -89,19 +87,10 @@ def run_langchain(text):
     split_docs = summarizer.split_docs(text=text)
     return summarizer.map_reduce_chain.run(split_docs)
 
+
 @publisher.publish(queue="summary")
 async def summarize_text(text_id) ->str:
-    # Получить текст
-    text:TranscribedText = await postgres_database_repository.get_transcribed_text_by_id(result_id=text_id)
-    # Отправить в лонгченй и Получить результат саммари
-    result = run_langchain(text=text.text)
-    #Сохранить результат
-    summary_id = await postgres_database_repository.save_summary_text(text=result, addressee=None)
-    return TranscribedTextId(
-        id_text=summary_id,
-        addressee=None,
-        description=None,
-    ).json()
+
 
 
 

@@ -1,9 +1,6 @@
 from fastapi import HTTPException
 from fastapi import APIRouter
 from starlette.requests import Request
-
-from src.api.models.get_request_models.assistant import Assistant
-
 assistant_router = APIRouter()
 
 
