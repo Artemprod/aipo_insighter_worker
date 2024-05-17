@@ -1,80 +1,46 @@
 import asyncio
+from typing import List
 
-from src.utils.crop_file import crop_file
-from src.services.youtube_package.youtube import download_video_from_youtube
-from container import publisher, whisper_client, postgres_database_repository
-from domain.enteties.IOdataenteties.queue_enteties import TranscribedTextId
+from src.services.openai_api_package.whisper_package.whisper import WhisperClient
 
 
-async def total_transcribe(files: list):
-    tasks = []
-    for file in files:
-        tasks.append(asyncio.create_task(whisper_client.whisper_compile(file_path=file)))
-    result = await asyncio.gather(*tasks)
-    total_transcription = " ".join(result)
-    return total_transcription
+class BaseTranscriber:
+    def __init__(self, transcribe_model):
+        self.transcribe_model = transcribe_model
 
 
-# TODO Переименоваать в понятную функцию
-async def transcribe(file_path):
-    files = await crop_file(file_path, output_path=r"/temp")
-    # Экспортировать если не экспортироавн
-    # expot_to_mp3()
-    print('croped')
-    # ОТправить в виспер
-    result = await total_transcribe(files)
-    # сохранить результат в базу данных и вернуть id записи
+class WhisperTranscriber(BaseTranscriber):
+    def __init__(self, transcribe_model: WhisperClient):
+        super().__init__(transcribe_model)
 
-    return result
+    async def transcribe_bunch(self, files: List[str]) -> str:
+        # Запускаем все задачи параллельно и собираем их результаты в порядке передачи
+        tasks = [self.transcribe_model.whisper_compile(file_path=file) for file in files]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
 
+        # Соединяем результаты транскрипции в одну строку с учетом порядка файлов
+        total_transcription = " ".join(result for result in results if isinstance(result, str))
+        return total_transcription
 
-async def download_file(url, path: str):
-    return r"C:\Users\artem\OneDrive\Рабочий стол\Тестовые данные\WEBM mini.webm"
+    async def __call__(self, files: List[str]) -> str:
+        return await self.transcribe_bunch(files)
 
-
-@publisher.publish(queue="transcribe")
-async def transcribe_youtube_video(youtube_url: str) ->str:
-    # скачать файл
-    # TODO Поставить временный файлы
-    file = await download_video_from_youtube(youtube_url=youtube_url,
-                                             path=r"/temp")  # использует агента скачивания
-    print('downloaded')
-    transcribed_text: str = await transcribe(file)
-
-    record_id = await postgres_database_repository.save_transcribed_text(text=transcribed_text, addressee=None)
-
-
-    # преообразовать в данные для отправки
-
-    return TranscribedTextId(
-        id_text=record_id,
-        addressee=None,
-        description=None,
-    ).json()
-
-
-@publisher.publish(queue="transcribe")
-async def transcribe_storage_file(file_url: str):
-    # TODO Поставить временный файлы
-    file = await download_file(url=file_url,
-                               path=r"/temp")  # использует агента скачивания
-    print('file downloaded')
-    record_id: int = await transcribe(file)
-
-    # преообразовать в данные для отправки
-    return TranscribedTextId(
-        id_text=record_id,
-        addressee=None,
-        description=None,
-    ).json()
-
-
-
-if __name__ == '__main__':
-    async def main():
-        url = "https://www.youtube.com/watch?v=HK5BRAApMp8"
-        res = await transcribe_youtube_video(string=url)
-        print(res)
-
-
-    asyncio.run(main())
+#
+# async def download_file(url, path: str):
+#     return r"C:\Users\artem\OneDrive\Рабочий стол\Тестовые данные\WEBM mini.webm"
+#
+#
+# @publisher.publish(queue="transcribe")
+# async def transcribe_storage_file(file_url: str):
+#     # TODO Поставить временный файлы
+#     file = await download_file(url=file_url,
+#                                path=r"/temp")  # использует агента скачивания
+#     print('file downloaded')
+#     record_id: int = await transcribe(file)
+#
+#     # преообразовать в данные для отправки
+#     return TranscribedTextId(
+#         id_text=record_id,
+#         addressee=None,
+#         description=None,
+#     ).json()

@@ -4,7 +4,7 @@ import nats
 
 
 # TODO Добавить исходящий BaseModel клас для корректной отпроавки данныех через NATS
-class WorkerPublisher:
+class Publisher:
     def __init__(self, server_url):
         self.server_url = server_url
 
@@ -14,7 +14,7 @@ class WorkerPublisher:
             async def wrapper(*args, **kwargs):
                 nc = await nats.connect(self.server_url)
                 result = await func(*args, **kwargs)
-                await nc.publish(queue, str(result).encode())  # Убедитесь, что данные в формате bytes
+                await nc.publish(queue, str(result).encode())
                 print('send to adress')
                 await nc.close()
                 return result
@@ -22,8 +22,15 @@ class WorkerPublisher:
 
         return decorator
 
+    async def publish_result(self,result, queue):
+        nc = await nats.connect(self.server_url)
+        await nc.publish(queue, str(result).encode())
+        print('send to adress', queue, end=' ')
+        await nc.close()
 
-# p = WorkerPublisher("nats://demo.nats.io:4222")
+
+
+# p = Publisher("nats://demo.nats.io:4222")
 
 
 # @p.publish(queue="foo")
