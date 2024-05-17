@@ -5,7 +5,6 @@ from aio_pika import IncomingMessage
 from aio_pika.abc import AbstractRobustConnection, AbstractRobustChannel, AbstractRobustQueue, AbstractExchange
 
 
-
 class RabbitMQConnector:
     def __init__(self, username, password, port, rabbit_host='localhost'):
         self.username = username
@@ -29,6 +28,7 @@ class RabbitMQConnector:
             @wraps(func)
             async def wrapper(*args, **kwargs):
                 await func(*args, **kwargs)
+
             return wrapper
 
         return decorator
@@ -37,7 +37,7 @@ class RabbitMQConnector:
         print('Start consuming ...')
         await self.connect()
         for exchange, queue, exchange_type, func in self.handlers:
-            exchange_object:AbstractExchange = await self.channel.declare_exchange(name=exchange, type=exchange_type)
+            exchange_object: AbstractExchange = await self.channel.declare_exchange(name=exchange, type=exchange_type)
             queue_object: AbstractRobustQueue = await self.channel.declare_queue(name=queue, durable=True)
             await queue_object.bind(exchange_object)
 
@@ -51,9 +51,3 @@ class RabbitMQConnector:
             await asyncio.Future()  # Run forever
         finally:
             await self.connection.close()
-
-
-
-
-
-

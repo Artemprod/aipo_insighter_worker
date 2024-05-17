@@ -7,6 +7,8 @@ class StartFromYouTubeMessage(BaseModel):
     user_id: int = Field()
     youtube_url: str = Field()
     assistant_id: int = Field()
+    queue_transcribe:str
+    queue_summary:str
     source: Optional[str] = None
     user_prompt: Optional[str] = None
     description: Optional[str] = None
