@@ -1,8 +1,7 @@
 import asyncio
 
-from src.consumption.consumers.summarizer import summarize_text
-from src.consumption.consumers.transcriber import transcribe_youtube_video, WisperTranscriber
-from src.file_manager.media_file_cropper import crop_file
+from src.consumption.consumers.transcriber import WisperTranscriber
+from src.file_manager.utils.media_file_cropper import crop_file
 from src.publishers.publisher import Publisher
 from src.services.youtube_package.youtube import download_video_from_youtube
 

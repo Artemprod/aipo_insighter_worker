@@ -8,22 +8,33 @@ from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import CharacterTextSplitter
 
+from abc import ABC, abstractmethod
 
 
+class BaseSummarizer(ABC):
+    def __init__(self, model="gpt-3.5-turbo-0125", max_response_tokens=4000):
+        self.model = model
+        self.max_response_tokens = max_response_tokens
+        self.llm = None
 
-class DocumentSummarizer:
-    def __init__(self, llm):
-        self.llm = llm
-        self.max_response_tokens = 4000
+
+class DocumentSummarizer(BaseSummarizer):
+
+    def __init__(self, model="gpt-3.5-turbo-0125", max_response_tokens=4000):
+        super().__init__(model, max_response_tokens)
+        self.document_combiner = None
+        self.reduce_chain = None
+        self.map_chain = None
 
     def setup_chains(self):
+        self.llm = ChatOpenAI(temperature=0, model=self.model, )
         # Set up templated prompts
         self.setup_map_template()
         self.setup_reduce_template()
 
         # Set up chains for processing documents
-        self.map_chain = LLMChain(llm=self.llm, prompt=self.map_prompt,)
-        self.reduce_chain = LLMChain(llm=self.llm, prompt=self.reduce_prompt,)
+        self.map_chain = LLMChain(llm=self.llm, prompt=self.map_prompt, )
+        self.reduce_chain = LLMChain(llm=self.llm, prompt=self.reduce_prompt, )
         self.document_combiner = self.create_document_combiner()
 
     def setup_map_template(self):
@@ -72,28 +83,15 @@ class DocumentSummarizer:
             document_variable_name="docs",
             return_intermediate_steps=False)
 
-    def split_docs(self, text):
-        print(text)
+    @staticmethod
+    def split_docs(text):
         text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=100)
         docs = [Document(page_content=x) for x in text_splitter.split_text(text)]
         return docs
 
-def run_langchain(text):
-    #gpt-3.5-turbo-0125
-    llm = ChatOpenAI(temperature=0,model="gpt-3.5-turbo-0125", )
-    summarizer = DocumentSummarizer(llm)
-    summarizer.setup_chains()
-    summarizer.setup_map_reduce_chain()
-    split_docs = summarizer.split_docs(text=text)
-    return summarizer.map_reduce_chain.run(split_docs)
+    async def __call__(self, transcribed_text):
+        self.setup_chains()
+        self.setup_map_reduce_chain()
+        split_docs = self.split_docs(text=transcribed_text)
+        return self.map_reduce_chain.run(split_docs)
 
-
-@publisher.publish(queue="summary")
-async def summarize_text(text_id) ->str:
-
-
-
-
-
-if __name__ == "__main__":
-    asyncio.run(summarize_text(text_id=19))
