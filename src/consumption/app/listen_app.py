@@ -3,7 +3,8 @@ import asyncio
 from aio_pika import IncomingMessage
 
 from container import listener, whisper_client
-from src.api.models.post_request_models.start_process import StartFromYouTubeMessage
+from src.api.routers.main_process.schemas import StartFromYouTubeMessage
+
 from src.pipelines.pipline_factory import PipelineFactory
 
 youtube_url = "https://www.youtube.com/watch?v=apKE_Htn_GQ"

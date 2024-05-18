@@ -4,9 +4,11 @@ from src.database.repositories.storage_container import Repositories
 
 from src.api.app.initialize.server_creator import create_server
 import uvicorn
+from src.database.models.models_initializer import *
 
 url = "postgresql+asyncpg://postgres:1234@localhost:5432/text_process"
 repositories = Repositories(DatabaseSessionManager(database_url=url))
+
 
 server = create_server(repositories=repositories)
 

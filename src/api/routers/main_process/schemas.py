@@ -7,11 +7,17 @@ class StartFromYouTubeMessage(BaseModel):
     user_id: int = Field()
     youtube_url: str = Field()
     assistant_id: int = Field()
-    queue_transcribe:str
-    queue_summary:str
+    queue_transcribe: str
+    queue_summary: str
     source: Optional[str] = None
     user_prompt: Optional[str] = None
     description: Optional[str] = None
+
+
+class StartFromYouTubeErrorResponse(BaseModel):
+    user_id: int = Field()
+    youtube_url: str = Field()
+    description: str
 
 
 class StartFromStorageMessage(BaseModel):
@@ -21,4 +27,11 @@ class StartFromStorageMessage(BaseModel):
     storage_url: Optional[str] = None
     source: Optional[str] = None
     user_prompt: Optional[str] = None
+    description: Optional[str] = None
+
+
+class StartFromStorageErrorResponse(BaseModel):
+    user_id: int = Field()
+    file_path: str = Field()
+    storage_url: Optional[str] = None
     description: Optional[str] = None

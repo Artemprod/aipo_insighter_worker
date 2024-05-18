@@ -7,10 +7,13 @@ from starlette.requests import Request
 from src.consumption.models.consumption.summarization import SummaryText
 from src.consumption.models.consumption.transcribition import TranscribedText
 
-results_router = APIRouter()
+results_router = APIRouter(
+    prefix='/results',
+    tags=["Results"]
+)
 
 
-@results_router.get("/api/results/get_transcribed_text")
+@results_router.get("/get_transcribed_text")
 async def get_transcribed_text_from_database(id_text: int,
                                              request: Request):
     try:
@@ -23,7 +26,7 @@ async def get_transcribed_text_from_database(id_text: int,
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
-@results_router.get("/api/results/get_summary_text")
+@results_router.get("/get_summary_text")
 async def get_summary_text_from_database(id_text: int,
                                          request: Request):
     try:
