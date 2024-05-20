@@ -7,8 +7,7 @@ class StartFromYouTubeMessage(BaseModel):
     user_id: int = Field()
     youtube_url: str = Field()
     assistant_id: int = Field()
-    queue_transcribe: str
-    queue_summary: str
+    publisher_queue:str = Field()
     source: Optional[str] = None
     user_prompt: Optional[str] = None
     description: Optional[str] = None
@@ -24,6 +23,7 @@ class StartFromStorageMessage(BaseModel):
     user_id: int = Field()
     file_path: str = Field()
     assistant_id: int = Field()
+    publisher_queue: str = Field()
     storage_url: Optional[str] = None
     source: Optional[str] = None
     user_prompt: Optional[str] = None

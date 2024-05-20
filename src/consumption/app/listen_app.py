@@ -1,32 +1,31 @@
 import asyncio
+import tempfile
 
 from aio_pika import IncomingMessage
 
-from container import listener, whisper_client
+from container import listener
 from src.api.routers.main_process.schemas import StartFromYouTubeMessage
+from src.pipelines.models import PiplineData
 
-from src.pipelines.pipline_factory import PipelineFactory
+
 
 youtube_url = "https://www.youtube.com/watch?v=apKE_Htn_GQ"
-file_path = r"D:\projects\AIPO_V2\insighter_worker\temp"
-transcribe_model = whisper_client
-llm = "gpt-4o"
-max_response_tokens = 500
-chunk_lents_seconds = 30
-server_url="nats://demo.nats.io:4222"
+
 
 @listener.consume('processor', 'transcribe_from_youtube_queue')
-async def process_message(message: IncomingMessage):
+async def process_message(message: IncomingMessage, utils):
     print(f"Received message: {message.body.decode()}")
     json_str = message.body.decode()
     try:
         query_message = StartFromYouTubeMessage.parse_raw(json_str)  # Преобразование JSON строки в объект Pydantic
-        pipeline = PipelineFactory.create_youtube_pipeline(
-            query_message.youtube_url, file_path, transcribe_model, llm, max_response_tokens, chunk_lents_seconds,
-            transcribed_queue=StartFromYouTubeMessage.queue_transcribe,
-            summary_queue=StartFromYouTubeMessage.queue_summary, server_url=server_url
-        )
-        asyncio.create_task(pipeline.run())
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            pipeline = utils.factory.create_youtube_pipeline(youtube_url=query_message.youtube_url,
+                                                             output_path=f"{tmpdirname}{query_message.user_id}",
+                                                             pipline_data=PiplineData(
+                                                                 initiator_user_id=query_message.user_id,
+                                                                 publisher_queue=query_message.publisher_queue,
+                                                             ))
+            asyncio.create_task(pipeline.run())
     except ValueError as e:
         print(f"Error parsing message: {e}")
 

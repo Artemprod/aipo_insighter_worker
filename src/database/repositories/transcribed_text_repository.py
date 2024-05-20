@@ -13,35 +13,19 @@ class TranscribedTextRepository(BaseRepository):
     async def save(self,
                    text: str,
                    initiator_user_id: int,
-                   file_id: int,
                    transcription_date: datetime,
                    transcription_time: datetime,
-                   model_id: int,
-                   language_code: str,
-                   tags: str) -> TranscribedText:
+                   ) -> TranscribedText:
         async with self.db_session_manager.session_scope() as session:
             transcribed_text = TranscribedTextModel(text=text,
                                                     initiator_user_id=initiator_user_id,
-                                                    file_id=file_id,
                                                     transcription_date=transcription_date,
                                                     transcription_time=transcription_time,
-                                                    model_id=model_id,
-                                                    language_code=language_code,
-                                                    tags=tags)
+                                                    )
             session.add(transcribed_text)
             await session.commit()
 
-            return TranscribedText(
-                id=transcribed_text.id,
-                text=text,
-                initiator_user_id=initiator_user_id,
-                file_id=file_id,
-                transcription_date=transcription_date,
-                transcription_time=transcription_time,
-                model_id=model_id,
-                language_code=language_code,
-                tags=tags,
-            )
+            return TranscribedText(**transcribed_text.to_dict())
 
     async def get(self, text_id: int) -> Optional[TranscribedText]:
         async with self.db_session_manager.session_scope() as session:
@@ -49,16 +33,7 @@ class TranscribedTextRepository(BaseRepository):
             results = await session.execute(query)
             result = results.scalars().first()  # Получаем первый объект из результатов запроса
             if result:
-                return TranscribedText(
-                    text=result.text,
-                    initiator_user_id=result.initiator_user_id,
-                    file_id=result.file_id,
-                    transcription_date=result.transcription_date,
-                    transcription_time=result.transcription_time,
-                    model_id=result.model_id,
-                    language_code=result.language_code,
-                    tags=result.tags,
-                )
+                return TranscribedText(**result.to_dict())
             return None
 
     async def delete(self, text_id: int) -> bool:

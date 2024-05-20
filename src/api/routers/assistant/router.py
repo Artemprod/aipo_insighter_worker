@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from starlette.requests import Request
 
 from fastapi_cache.decorator import cache
+
 assistant_router = APIRouter(
     prefix="/assistants",
     tags=["Assistants"],
@@ -34,12 +35,11 @@ async def get_one_assistant(request: Request,
             raise HTTPException(status_code=404,
                                 detail={
 
-                                    'details':f"No assistant with this id: {assistant_id}, in database"}
+                                    'details': f"No assistant with this id: {assistant_id}, in database"}
                                 )
     except Exception as e:
         raise HTTPException(status_code=500, detail={
 
-                                    'details':f"An error occurred: {str(e)}"}
-
+            'details': f"An error occurred: {str(e)}"}
 
                             )

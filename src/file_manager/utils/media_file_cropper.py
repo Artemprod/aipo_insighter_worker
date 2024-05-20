@@ -36,8 +36,8 @@ class SyncCropper(BaseCropper):
                 paths.append(save_path)
         return paths
 
-    async def __call__(self, file_path, output_path):
-        return self.crop_file(file_path, output_path)
+    async def __call__(self, file_path):
+        return self.crop_file(file_path)
 
 
 class AsyncCropper(BaseCropper):

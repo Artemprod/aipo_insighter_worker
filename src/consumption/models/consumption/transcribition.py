@@ -10,10 +10,7 @@ from typing import Optional
 class TranscribedText:
     text: str
     initiator_user_id: int
-    file_id: int
     transcription_date: datetime
     transcription_time: datetime
-    model_id: int
-    language_code: str
     id: Optional[int] = None
-    tags: Optional[str] = None
+

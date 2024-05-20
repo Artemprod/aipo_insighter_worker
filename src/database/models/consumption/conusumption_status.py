@@ -6,11 +6,9 @@ from src.database.models.base_model import ModelBase
 
 class WorkerStatus(ModelBase):
     __tablename__ = "worker_statuses"
-
     id = Column(Integer, primary_key=True)
     stage_id = Column(Integer, ForeignKey('stages.id'), nullable=False)
-    assistant_id = Column(Integer, ForeignKey('ai_assistants.assistant_id'),
-                          nullable=False)
+    assistant_id = Column(Integer, ForeignKey('ai_assistants.assistant_id'), nullable=False)
     status_id = Column(Integer, ForeignKey('statuses.id'), nullable=False)
     process_id = Column(BigInteger)
     file_id = Column(BigInteger, ForeignKey('files.id'), nullable=False)
@@ -20,8 +18,9 @@ class WorkerStatus(ModelBase):
     error_time = Column(TIMESTAMP)
     error_message = Column(Text)
 
-    stage = relationship("Stage")
+
     status = relationship("Status")
+    stage = relationship("Stage")
 
     def __repr__(self):
         return (f"<WorkerStatus(id={self.id}, stage_id={self.stage_id}, assistant_id={self.assistant_id}, "

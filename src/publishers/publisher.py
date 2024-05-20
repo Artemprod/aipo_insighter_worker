@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import asdict
 from functools import wraps
 import nats
 from nats import NATS
@@ -27,7 +28,7 @@ class Publisher:
 
     async def publish_result(self, result, queue):
         nc = await nats.connect(self.server_url)
-        await nc.publish(queue, str(result).encode())
+        await nc.publish(queue, str(asdict(result)).encode())
         print('send to adress', queue, end=' ')
         await nc.close()
 
