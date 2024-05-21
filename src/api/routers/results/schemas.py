@@ -12,3 +12,7 @@ class ResponseTranscribedText(BaseModel):
     language_code: str
     id: Optional[int] = None
     tags: Optional[str] = None
+
+class ResponseText(BaseModel):
+    id: int | str
+    initiator_user_id: int

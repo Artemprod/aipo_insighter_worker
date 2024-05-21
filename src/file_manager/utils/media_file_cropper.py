@@ -73,8 +73,4 @@ class AsyncCropper(BaseCropper):
         return await self.crop_file(file_path, max_concurrent_tasks)
 
 
-if __name__ == '__main__':
-    as_croper = AsyncCropper(chunk_lents_seconds=60 * 10)
-    o_p = r'D:\projects\AIPO_V2\insighter_worker\temp'
-    asyncio.run(as_croper(r"C:\Users\artem\OneDrive\Рабочий стол\Тестовые данные\M4A.m4a",
-                          output_path=o_p))
+

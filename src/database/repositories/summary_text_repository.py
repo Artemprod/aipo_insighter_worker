@@ -14,11 +14,8 @@ class SummaryTextRepository(BaseRepository):
                    text: str,
                    transcribed_text_id: int,
                    user_id: int,
-                   model_id: int,
                    summary_date: datetime,
-                   generation_time: datetime,
-                   tokens_requested: int,
-                   tokens_generated: int) -> SummaryText:
+                   ) -> SummaryText:
         async with self.db_session_manager.session_scope() as session:
             summary_text = SummaryTextsModel(summary_text=text,
                                              transcribed_text_id=transcribed_text_id,

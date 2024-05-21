@@ -34,21 +34,4 @@ class PipelineFactory:
         # return weak_pipeline
         ...
 
-# async def main():
-#     youtube_url = "https://www.youtube.com/watch?v=apKE_Htn_GQ"
-#     file_path = r"D:\projects\AIPO_V2\insighter_worker\temp"
-#
-#     transcribe_model = whisper_client
-#     llm = "gpt-4o"
-#     max_response_tokens = 500
-#     chunk_lents_seconds = 30
-#
-#     pipeline = PipelineFactory.create_youtube_pipeline(
-#         youtube_url, file_path, transcribe_model, llm, max_response_tokens, chunk_lents_seconds
-#     )
-#     res = await pipeline.run()
-#     print(res)
-#
-# if __name__ == '__main__':
-#     asyncio.run(main())
 #

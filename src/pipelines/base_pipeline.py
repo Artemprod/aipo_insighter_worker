@@ -22,6 +22,7 @@ class Pipeline:
             file = await self.loader()
             bunch_of_files = await self.cropper(file)
             transcribed_text = await self.transcriber(bunch_of_files)
+
             text_model = await self.repo.transcribed_text_repository.save(text=transcribed_text,
                                                                           initiator_user_id=self.pipline_data.initiator_user_id,
                                                                           transcription_date=datetime.now(),
@@ -31,7 +32,7 @@ class Pipeline:
                                                                user_id=self.pipline_data.initiator_user_id),
                                  queue=self.pipline_data.publisher_queue)
             summary = await self.summarizer(transcribed_text)
-            summary_text_model = await self.repo.summary_text_repository.save(summary_text=summary,
+            summary_text_model = await self.repo.summary_text_repository.save(text=summary,
                                                                               transcribed_text_id=text_model.id,
                                                                               user_id=self.pipline_data.initiator_user_id,
                                                                               summary_date=datetime.now())

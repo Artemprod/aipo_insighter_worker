@@ -7,11 +7,11 @@ from src.services.openai_api_package.whisper_package.whisper import WhisperClien
 from src.database import *
 
 whisper_config = load_whisper_configs()
-listener = RabbitMQConnector('guest', 'guest', 5672,rabbit_host='localhost')
+listener = RabbitMQConnector('guest', 'guest', 5672, rabbit_host='localhost')
 
-
-url = "postgresql+asyncpg://postgres:1234@localhost:5432/text_process"
+url = "postgresql+asyncpg://postgres:1234@localhost:5432/procees"
 repositories_com = Repositories(DatabaseSessionManager(database_url=url))
 whisper_client = WhisperClient(conf=whisper_config)
-listener.utils.factory = PipelineFactory(repo=repositories_com,transcribe_model=whisper_client,llm="gpt-4o",
-                                         max_response_tokens=4000,chunk_lents_seconds=60*10,server_url="nats://demo.nats.io:4222")
+listener.utils.factory = PipelineFactory(repo=repositories_com, transcribe_model=whisper_client, llm="gpt-4o",
+                                         max_response_tokens=4000, chunk_lents_seconds=60 * 10,
+                                         server_url="nats://demo.nats.io:4222")
