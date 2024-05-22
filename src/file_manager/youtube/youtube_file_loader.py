@@ -26,10 +26,3 @@ class YouTubeFileLoader(BaseFileLoader):
 
 
 
-
-if __name__ == '__main__':
-    url = "https://www.youtube.com/watch?v=HK5BRAApMp8"
-    outp = r"D:\projects\AIPO_V2\insighter_worker\temp"
-    a = YouTubeFileLoader()
-
-    asyncio.run(a(youtube_url='https://www.youtube.com/watch?v=HK5BRAApMp8',path=outp))
