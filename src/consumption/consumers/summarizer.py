@@ -10,58 +10,69 @@ from langchain_text_splitters import CharacterTextSplitter
 
 from abc import ABC, abstractmethod
 
+from src.consumption.models.consumption.asssistant import AIAssistant
+
 
 class BaseSummarizer(ABC):
+
     def __init__(self, model="gpt-3.5-turbo-0125", max_response_tokens=4000):
         self.model = model
         self.max_response_tokens = max_response_tokens
         self.llm = None
+
+    @abstractmethod
+    async def setup_chains(self, assistant: AIAssistant):
+        pass
+
+    @abstractmethod
+    async def __call__(self, transcribed_text, assistant: AIAssistant):
+        pass
+
+
+
+
+
 
 
 class DocumentSummarizer(BaseSummarizer):
 
     def __init__(self, model="gpt-3.5-turbo-0125", max_response_tokens=4000):
         super().__init__(model, max_response_tokens)
+        self.map_reduce_chain = None
+        self.map_prompt = None
+        self.reduce_prompt = None
         self.document_combiner = None
         self.reduce_chain = None
         self.map_chain = None
 
-    def setup_chains(self):
+    def setup_chains(self, assistant: AIAssistant):
         self.llm = ChatOpenAI(temperature=0, model=self.model, )
         # Set up templated prompts
-        self.setup_map_template()
-        self.setup_reduce_template()
+        self.setup_map_template(assistant)
+        self.setup_reduce_template(assistant)
 
         # Set up chains for processing documents
         self.map_chain = LLMChain(llm=self.llm, prompt=self.map_prompt, )
         self.reduce_chain = LLMChain(llm=self.llm, prompt=self.reduce_prompt, )
         self.document_combiner = self.create_document_combiner()
 
-    def setup_map_template(self):
-        map_template = """
-         Ниже представлен набор документов которые представляют часть текста из лекции или из обучающего материалы:
-          {docs}
-          Пожалуйста, обратите внимание на следующее:->
-        1. Идентификация ключевых идей: Определите и выделите ключевые идеи и тезисы, описанные в этой части текста.
-        2. Связь с общей темой лекции: Предложите, как эти идеи могут быть связаны с общей темой лекции, если это возможно.
-        3. Запись особенностей стиля или методов преподавания, использованных в данной части.
-        
-        Убедитесь, что ваш анализ помогает восстановить контекст, если эта часть будет рассматриваться отдельно от других частей документа.
-        
-        На основе этого списка документов определите, пожалуйста, основные темы. 
-        Полезный ответ->:"""
+    def setup_map_template(self, assistant: AIAssistant):
+        map_template = f"""
+            Ниже представлен набор документов которые представляют часть текста:
+             {'{docs}'}
+             {assistant.assistant_prompt},
+             {assistant.user_prompt_for_chunks}
+           Убедитесь, что ваш анализ помогает восстановить контекст, если эта часть будет рассматриваться отдельно от других частей документа.
+           Полезный ответ->:"""
         self.map_prompt = PromptTemplate.from_template(map_template)
 
-    def setup_reduce_template(self):
-        reduce_template = """
-        Вы получили набор кратких резюме каждой части лекции: 
-        -> {docs}
-        Ваша задача: ->
-        1. Анализируя предоставленные резюме, сформулируйте окончательное, обобщенное резюме всей лекции, консолидируя основные тезисы и темы.
-        2. Из полученных кратких резюме выделите ключевые пункты для формулирования домашнего задания, которое будет укреплять понимание освещенных тем и обсуждений.
-        3. Определите и составьте список рекомендуемых книг, который основан на анализе всех резюме которые вы получили. Эти книги должны быть полезны для дальнейшего изучения материала и выполнения домашнего задания. Список должен содержать только реально существующие публикации.
-        Убедитесь, что ваше консолидированное резюме обеспечивает ясное и всеобъемлющее понимание всех ключевых моментов и педагогических методов, презентованных в видеозаписи лекции.   
-        Скомпилированый ответ:"""
+    def setup_reduce_template(self, assistant: AIAssistant):
+        reduce_template = f"""
+           Вы получили набор кратких резюме каждой части: 
+           -> {'{docs}'}
+           {assistant.assistant_prompt},
+           {assistant.user_prompt}
+           Скомпилированный ответ:"""
         self.reduce_prompt = PromptTemplate.from_template(reduce_template)
 
     def create_document_combiner(self):
@@ -73,7 +84,7 @@ class DocumentSummarizer(BaseSummarizer):
             collapse_documents_chain=StuffDocumentsChain(
                 llm_chain=self.reduce_chain,
                 document_variable_name="docs"),
-            token_max=4000)
+            token_max=self.max_response_tokens)
 
     def setup_map_reduce_chain(self):
         # Define the map-reduce process for document summarization
@@ -89,8 +100,8 @@ class DocumentSummarizer(BaseSummarizer):
         docs = [Document(page_content=x) for x in text_splitter.split_text(text)]
         return docs
 
-    async def __call__(self, transcribed_text):
-        self.setup_chains()
+    async def __call__(self, transcribed_text, assistant: AIAssistant):
+        self.setup_chains(assistant)
         self.setup_map_reduce_chain()
         split_docs = self.split_docs(text=transcribed_text)
         return self.map_reduce_chain.run(split_docs)
