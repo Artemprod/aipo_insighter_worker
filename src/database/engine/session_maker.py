@@ -1,6 +1,6 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
 from contextlib import asynccontextmanager
+
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 
 class DatabaseSessionManager:
@@ -16,7 +16,7 @@ class DatabaseSessionManager:
         )
 
         # Создание фабрики для асинхронных сессий
-        self.async_session_factory = sessionmaker(bind=self.engine, expire_on_commit=False, class_=AsyncSession)
+        self.async_session_factory = async_sessionmaker(bind=self.engine, expire_on_commit=False, class_=AsyncSession)
 
     @asynccontextmanager
     async def session_scope(self):
