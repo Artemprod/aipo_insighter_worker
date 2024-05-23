@@ -1,6 +1,6 @@
 import asyncio
 from container import listener
-
+from queues.start_process import *
 
 async def main():
     await listener.start_consume()
