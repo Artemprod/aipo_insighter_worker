@@ -3,13 +3,11 @@ from datetime import datetime
 from typing import Optional
 
 
-
-
-
 @dataclass
 class TranscribedText:
     text: str
-    initiator_user_id: int
+    user_id: int
+    service_source: str
     transcription_date: datetime
     transcription_time: datetime
     id: Optional[int] = None

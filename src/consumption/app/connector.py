@@ -4,9 +4,9 @@ from functools import wraps
 from aio_pika import IncomingMessage
 from aio_pika.abc import AbstractRobustConnection, AbstractRobustChannel, AbstractRobustQueue, AbstractExchange
 
-class Utils:
-    def func(self):
-        raise NotImplementedError
+from src.consumption.models.rabit.utils import Modules
+
+
 class RabbitMQConnector:
     def __init__(self, username, password, port, rabbit_host='localhost'):
         self.username = username
@@ -14,7 +14,7 @@ class RabbitMQConnector:
         self.port = port
         self.rabbit_host = rabbit_host
         self.handlers = []
-        self.utils = Utils
+        self.utils = Modules
 
     async def connect(self):
         # Establish connection to RabbitMQ
@@ -46,7 +46,7 @@ class RabbitMQConnector:
 
             async def message_processor(message: IncomingMessage, func=func):
                 async with message.process():
-                    await func(message,self.utils)
+                    await func(message, self.utils)
 
             await queue_object.consume(message_processor)
 
@@ -55,5 +55,3 @@ class RabbitMQConnector:
         finally:
             await self.connection.close()
 
-    def set_utils(self, utils):
-        self.utils = utils

@@ -14,6 +14,7 @@ class SummaryTextRepository(BaseRepository):
                    text: str,
                    transcribed_text_id: int,
                    user_id: int,
+                   service_source:str,
                    summary_date: datetime,
                    ) -> SummaryText:
         async with self.db_session_manager.session_scope() as session:
@@ -21,6 +22,7 @@ class SummaryTextRepository(BaseRepository):
                                              transcribed_text_id=transcribed_text_id,
                                              user_id=user_id,
                                              summary_date=summary_date,
+                                             service_source=service_source,
                                              )
             session.add(summary_text)
             await session.commit()

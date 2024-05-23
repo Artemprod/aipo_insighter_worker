@@ -12,15 +12,17 @@ class TranscribedTextRepository(BaseRepository):
 
     async def save(self,
                    text: str,
-                   initiator_user_id: int,
+                   user_id: int,
+                   service_source: str,
                    transcription_date: datetime,
                    transcription_time: datetime,
                    ) -> TranscribedText:
         async with self.db_session_manager.session_scope() as session:
             transcribed_text = TranscribedTextModel(text=text,
-                                                    initiator_user_id=initiator_user_id,
                                                     transcription_date=transcription_date,
                                                     transcription_time=transcription_time,
+                                                    user_id=user_id,
+                                                    service_source=service_source,
                                                     )
             session.add(transcribed_text)
             await session.commit()
@@ -44,4 +46,3 @@ class TranscribedTextRepository(BaseRepository):
                 await session.commit()
                 return True
             return False
-
