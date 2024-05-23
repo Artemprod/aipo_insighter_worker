@@ -1,15 +1,10 @@
-#__run fast api application __
-from src.database.engine.session_maker import DatabaseSessionManager
-from src.database.repositories.storage_container import Repositories
+# __run fast api application __
+from container import repositories_com
 
 from src.api.app.initialize.server_creator import create_server
 import uvicorn
 
-url = "postgresql+asyncpg://postgres:1234@localhost:5432/text_process"
-repositories = Repositories(DatabaseSessionManager(database_url=url))
-
-server = create_server(repositories=repositories)
+server = create_server(repositories=repositories_com)
 
 if __name__ == "__main__":
-    uvicorn.run("server_app_run:server",  host="127.0.0.1", port=9192, lifespan="on")
-
+    uvicorn.run("server_app_run:server", host="127.0.0.1", port=9192, lifespan="on")

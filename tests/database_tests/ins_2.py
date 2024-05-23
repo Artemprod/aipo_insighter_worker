@@ -32,7 +32,7 @@ async def populate_db(repository):
 
 
 # Получаем экземпляр репозитория
-url = "postgresql+asyncpg://postgres:1234@localhost:5432/text_process"
+url = "postgresql+asyncpg://postgres:1234@localhost:5432/procees"
 repository = AssistantRepository(DatabaseSessionManager(database_url=url))
 
 asyncio.run(populate_db(repository))

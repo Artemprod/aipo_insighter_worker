@@ -2,12 +2,16 @@ from fastapi import HTTPException
 from fastapi import APIRouter
 from starlette.requests import Request
 
-from src.api.models.get_request_models.assistant import Assistant
+from fastapi_cache.decorator import cache
 
-assistant_router = APIRouter()
+assistant_router = APIRouter(
+    prefix="/assistants",
+    tags=["Assistants"],
+)
 
 
-@assistant_router.get("/api/assistants/get_all")
+@assistant_router.get("/get_all")
+@cache(expire=60)
 async def get_all_assistants(request: Request):
     try:
         assistants = await request.app.repositories.assistant_repository.get_all()
@@ -20,6 +24,7 @@ async def get_all_assistants(request: Request):
 
 
 @assistant_router.get("/api/assistants/get_one")
+@cache(expire=60)
 async def get_one_assistant(request: Request,
                             assistant_id: int):
     try:
@@ -27,6 +32,14 @@ async def get_one_assistant(request: Request,
         if assistants is not None:
             return assistants
         else:
-            raise HTTPException(status_code=404, detail="assistant not found")
+            raise HTTPException(status_code=404,
+                                detail={
+
+                                    'details': f"No assistant with this id: {assistant_id}, in database"}
+                                )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail={
+
+            'details': f"An error occurred: {str(e)}"}
+
+                            )

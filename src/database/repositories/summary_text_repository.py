@@ -14,35 +14,18 @@ class SummaryTextRepository(BaseRepository):
                    text: str,
                    transcribed_text_id: int,
                    user_id: int,
-                   model_id: int,
                    summary_date: datetime,
-                   generation_time: datetime,
-                   tokens_requested: int,
-                   tokens_generated: int) -> SummaryText:
+                   ) -> SummaryText:
         async with self.db_session_manager.session_scope() as session:
             summary_text = SummaryTextsModel(summary_text=text,
                                              transcribed_text_id=transcribed_text_id,
                                              user_id=user_id,
-                                             model_id=model_id,
                                              summary_date=summary_date,
-                                             generation_time=generation_time,
-                                             tokens_requested=tokens_requested,
-                                             tokens_generated=tokens_generated)
+                                             )
             session.add(summary_text)
             await session.commit()
 
-            return SummaryText(
-                summary_text=text,
-                transcribed_text_id=transcribed_text_id,
-                user_id=user_id,
-                model_id=model_id,
-                summary_date=summary_date,
-                generation_time=generation_time,
-                tokens_requested=tokens_requested,
-                tokens_generated=tokens_generated,
-                id=summary_text.id,
-
-            )
+            return SummaryText(**summary_text.to_dict())
 
     async def get(self, text_id: int) -> Optional[SummaryText]:
         async with self.db_session_manager.session_scope() as session:
@@ -50,18 +33,7 @@ class SummaryTextRepository(BaseRepository):
             results = await session.execute(query)
             result = results.scalars().first()
             if result:
-                return SummaryText(
-                    summary_text=result.summary_text,
-                    transcribed_text_id=result.transcribed_text_id,
-                    user_id=result.user_id,
-                    model_id=result.model_id,
-                    summary_date=result.summary_date,
-                    generation_time=result.generation_time,
-                    tokens_requested=result.tokens_requested,
-                    tokens_generated=result.tokens_generated,
-                    id=result.id,
-
-                )
+                return SummaryText(**result.to_dict())
             return None
 
     async def delete(self, text_id: int):

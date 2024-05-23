@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP, BigInteger, CHAR, Text, DECIMAL, TIME
 from sqlalchemy.dialects.postgresql import INTERVAL
+from sqlalchemy.orm import relationship
 
 from src.database.models.base_model import ModelBase
 
