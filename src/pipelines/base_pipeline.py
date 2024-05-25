@@ -1,4 +1,3 @@
-import asyncio
 import gc
 from datetime import datetime
 

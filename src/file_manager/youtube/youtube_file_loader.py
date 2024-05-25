@@ -1,16 +1,14 @@
-import asyncio
 import os
-from functools import wraps, partial
 
 from pytube import YouTube
 
-from src.file_manager.base_file_loader import  BaseFileLoader
+from src.file_manager.base_file_loader import BaseFileLoader
 from src.utils.wrappers import async_wrap
 
 
 class YouTubeFileLoader(BaseFileLoader):
 
-    def __init__(self,youtube_url, path):
+    def __init__(self, youtube_url, path):
         self.youtube_url = youtube_url
         self.path = path
 
@@ -23,6 +21,3 @@ class YouTubeFileLoader(BaseFileLoader):
 
     async def __call__(self):
         return await self.load()
-
-
-

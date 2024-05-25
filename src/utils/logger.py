@@ -47,4 +47,4 @@ if __name__ == '__main__':
         try:
             divide(1, 0)
         except ZeroDivisionError:
-            insighter_logger.exception("Деление на нноль")
+            insighter_logger.exception("Деление на ноль")
