@@ -4,7 +4,6 @@ from container import listener
 from src.consumption.app.connector import Consumer
 from src.consumption.app.queues.start_process import  process_message_from_youtube
 
-
 async def main():
 
     connector = listener
