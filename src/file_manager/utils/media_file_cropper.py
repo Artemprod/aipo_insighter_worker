@@ -10,39 +10,43 @@ from pydub.utils import make_chunks
 
 from abc import ABC, abstractmethod
 
+from src.file_manager.utils.interface import ICropper
 
-class BaseCropper(ABC):
 
-    def __init__(self, chunk_lents_seconds: int,
-                 output_path:str):
+class BaseCropper(ICropper):
+
+    def __init__(self,
+                 chunk_lents_seconds: int,
+                    ):
         self.chunk_length_seconds = chunk_lents_seconds
-        self.output_path=output_path
 
-    @abstractmethod
     async def crop_file(self, *args, **kwargs):
-        pass
+        raise NotImplementedError
+
+    async def __call__(self, *args, **kwargs):
+        raise NotImplementedError
 
 
 class SyncCropper(BaseCropper):
 
-    async def crop_file(self, file_path):
+    async def crop_file(self, file_path, output_path):
         paths = []
         duration = self.chunk_length_seconds * 1000
         sound = AudioSegment.from_file(file_path)
         for i, chunk in enumerate(sound[::duration]):
-            save_path = fr"{self.output_path}\chunk_{i}.mp3"
+            save_path = fr"{output_path}\chunk_{i}.mp3"
             with open(save_path, "wb") as f:
                 chunk.export(f, format="mp3")
                 paths.append(save_path)
         return paths
 
-    async def __call__(self, file_path):
-        return self.crop_file(file_path)
+    async def __call__(self, file_path, output_path):
+        return self.crop_file(file_path, output_path)
 
 
 class AsyncCropper(BaseCropper):
 
-    async def crop_file(self, file_path, max_concurrent_tasks=None):
+    async def crop_file(self, file_path, output_path, max_concurrent_tasks=None):
         paths = []
         duration = self.chunk_length_seconds * 1000
         sound = AudioSegment.from_file(file_path)
@@ -55,7 +59,7 @@ class AsyncCropper(BaseCropper):
 
         tasks = []
         for i, chunk in enumerate(chunks):
-            save_path = os.path.normpath(os.path.join(self.output_path, f"chunk_{i}.mp3"))
+            save_path = os.path.normpath(os.path.join(output_path, f"chunk_{i}.mp3"))
             tasks.append(self.export_chunk(chunk, save_path, semaphore))
             paths.append(save_path)
 
@@ -67,10 +71,6 @@ class AsyncCropper(BaseCropper):
         async with semaphore:
             async with aiofiles.open(save_path, 'wb') as f:
                 await f.write(chunk.export(format="mp3").read())
-                print(save_path)
 
-    async def __call__(self, file_path, max_concurrent_tasks=None):
-        return await self.crop_file(file_path, max_concurrent_tasks)
-
-
-
+    async def __call__(self, file_path, output_path, max_concurrent_tasks=None):
+        return await self.crop_file(file_path, output_path, max_concurrent_tasks)

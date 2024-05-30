@@ -1,10 +1,5 @@
-import asyncio
-from container import listener
-from queues.start_process import *
 
-async def main():
-    await listener.start_consume()
-
+from src.consumption.app.queues.start_process import *
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(listener.start_consume())

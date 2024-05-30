@@ -8,8 +8,6 @@ from src.api.routers.results.router import results_router
 from src.database.repositories.storage_container import Repositories
 
 
-
-
 def create_server(repositories: Optional[Repositories] = None):
     server = FastAPI(lifespan=lifespan,
                      title="INSIGHTER APPLICATION",

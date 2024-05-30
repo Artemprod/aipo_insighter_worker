@@ -36,6 +36,7 @@ class RabbitMQConnector:
 
         return decorator
 
+
     async def start_consume(self):
         print('Start consuming ...')
         await self.connect()

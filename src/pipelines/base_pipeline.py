@@ -1,37 +1,38 @@
-import asyncio
 import gc
-from abc import ABC, abstractmethod
+import os
+import tempfile
+from abc import ABC
 from datetime import datetime
-from typing import Any
 
-from container import repositories_com
-from src.database.repositories.storage_container import Repositories
+from src.consumption.consumers.interface import ITranscriber, ISummarizer
+from src.database.repositories.interface import IRepositoryContainer
+from src.file_manager.interface import IBaseFileLoader
 from src.pipelines.models import PiplineData
+from src.publishers.interface import IPublisher
 from src.publishers.models import TranscribedTextTrigger, SummaryTextTrigger
 
 
-class Pipeline:
-    #TODO вынести в отдельный класс
-    repo:Repositories = repositories_com
-    loader:Any
-    file_cropper:Any
-    transcriber:Any
-    summarizer:Any
-    publisher:Any
+class Pipeline(ABC):
 
+    def __init__(self,
+                 repo: IRepositoryContainer,
+                 loader: IBaseFileLoader,
+                 transcriber: ITranscriber,
+                 summarizer: ISummarizer,
+                 publisher: IPublisher):
 
- ##TODO есть run которые запускает все есть часть для всех классов а есть изменяем
-    @abstractmethod
-    async def _run(self,pipeline_data: PiplineData):
-      pass
-      ##TODO Здесь логика не изменяемая постоянная для всех
-    async def run(self, pipeline_data: PiplineData) ->str | None:
+        self.repo = repo
+        self.loader = loader
+        self.transcriber = transcriber
+        self.summarizer = summarizer
+        self.publisher = publisher
+
+    async def _run(self, pipeline_data: PiplineData):
+        raise NotImplementedError
+
+    async def run(self, pipeline_data: PiplineData) -> str | None:
         try:
-            await self._run()
-            # file = await self.loader()
-            # bunch_of_files = await self.cropper(file)
-            transcribed_text = await self.transcriber(bunch_of_files)
-
+            transcribed_text = await self._run(pipeline_data)
             # Сохранение транскрибированного текста
             text_model = await self.repo.transcribed_text_repository.save(
                 text=transcribed_text,
@@ -49,9 +50,10 @@ class Pipeline:
 
             # Получение помощника для суммаризации
             assistant = await self.repo.assistant_repository.get(assistant_id=pipeline_data.assistant_id)
-
             # Суммаризация текста
-            summary = await self.summarizer(transcribed_text, assistant)
+
+            summary = await self.summarizer(transcribed_text=transcribed_text,
+                                            assistant=assistant)
 
             # Сохранение суммарного текста
             summary_text_model = await self.repo.summary_text_repository.save(
@@ -79,18 +81,21 @@ class Pipeline:
 
     async def cleanup(self):
         self.loader = None
-        self.cropper = None
         self.publisher = None
         self.transcriber = None
         self.summarizer = None
         gc.collect()
 
-class YoutubePipline(Pipeline):
 
-    async def _run(self,pipeline_data: PiplineData):
-        # тут изменяемая логика
-        return None
+class YoutubePipeline(Pipeline):
 
-class Storageipline(Pipeline):
     async def _run(self, pipeline_data: PiplineData):
-        pass
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            temp_file_path = os.path.normpath(
+                os.path.join(str(tmp_dir_name), str(datetime.now().timestamp()),
+                             str(pipeline_data.service_source),
+                             str(pipeline_data.initiator_user_id))
+            )
+            file = await self.loader(pipeline_data.file_destination, temp_file_path)
+            transcribed_text = await self.transcriber(file)
+            return transcribed_text

@@ -3,15 +3,17 @@ from configs import WhisperConfigs
 
 
 class WhisperClient:
-    def __init__(self, conf: WhisperConfigs):
+    def __init__(self,
+                 api_key,
+                 configs:WhisperConfigs):
         """
         Конструктор класса.
         Инициализация API ключа и создание асинхронного клиента.
         """
-        self.configs = conf
+        self.configs = configs
 
-        openai.api_key = self.configs.api
-        self.client = openai.AsyncClient()  # Обновлено с использованием правильного класса
+        openai.api_key = api_key
+        self.client = openai.AsyncClient(api_key=api_key)
 
         # Инициализация базовых промптов
         self.base_prompts = {

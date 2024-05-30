@@ -1,17 +1,151 @@
-from configs import load_whisper_configs
+from typing import Any, Dict
+
+from configs import ProjectSettings
 from src.consumption.app.connector import RabbitMQConnector
+from src.consumption.consumers.summarizer import DocumentSummarizer, GptSummarizer
+from src.consumption.consumers.transcriber import WhisperTranscriber, AssemblyTranscriber
 from src.database.engine.session_maker import DatabaseSessionManager
 from src.database.repositories.storage_container import Repositories
-from src.pipelines.pipline_factory import PipelineFactory
+from src.file_manager.utils.media_file_cropper import AsyncCropper
+from src.file_manager.youtube.youtube_file_loader import YouTubeFileLoader
+from src.publishers.publisher import Publisher
+from src.services.assembly.client import AssemblyClient
+from src.services.openai_api_package.chat_gpt_package.client import GPTClient
+from src.services.openai_api_package.chat_gpt_package.model import GPTOptions
 from src.services.openai_api_package.whisper_package.whisper import WhisperClient
-from src.database import *
 
-whisper_config = load_whisper_configs()
-listener = RabbitMQConnector('guest', 'guest', 5672, rabbit_host='localhost')
+from dataclasses import dataclass
 
-url = "postgresql+asyncpg://postgres:1234@localhost:5432/procees"
-repositories_com = Repositories(DatabaseSessionManager(database_url=url))
-whisper_client = WhisperClient(conf=whisper_config)
-listener.utils.factory = PipelineFactory(repo=repositories_com, transcribe_model=whisper_client, llm="gpt-4o",
-                                         max_response_tokens=4000, chunk_length_seconds=60 * 10,
-                                         server_url="nats://demo.nats.io:4222")
+
+@dataclass
+class SystemComponents:
+    repositories_com: Any
+    whisper_client: Any
+    gpt_client: Any
+    assembly_client: Any
+    assembly_transcriber: Any
+    whisper_transcriber: Any
+    lang_chain_summarization: Any
+    gpt_summarizer: Any
+    youtube_loader: Any
+    publisher: Any
+
+
+def initialize_asyncfile_cropper():
+    return AsyncCropper(chunk_lents_seconds=60 * 10)
+
+
+def initialize_database_session_manager(settings: ProjectSettings):
+    database = f'{settings.postgres.postgres_url}/{settings.postgres.database}'
+    return DatabaseSessionManager(database_url=database)
+
+
+def initialize_repositories_com(settings: ProjectSettings):
+    session_manager = initialize_database_session_manager(settings)
+    return Repositories(database_session_manager=session_manager)
+
+
+def initialize_assembly_client(settings: ProjectSettings):
+    return AssemblyClient(api_key=settings.assembly.assembly_api_key)
+
+
+def initialize_assembly_transcriber(settings: ProjectSettings):
+    client = initialize_assembly_client(settings)
+    return AssemblyTranscriber(assembly_client=client,
+                               language_code=settings.language,
+                               speaker_labels=settings.assembly.speaker_label)
+
+
+def initialize_whisper_client(settings: ProjectSettings):
+    return WhisperClient(api_key=settings.openai.openai_api_key, configs=settings.whisper)
+
+
+def initialize_whisper_transcriber(settings: ProjectSettings):
+    cropper = initialize_asyncfile_cropper()
+    client = initialize_whisper_client(settings)
+    return WhisperTranscriber(whisper_client=client, file_cropper=cropper)
+
+
+def initialize_lang_chain_summarization(settings: ProjectSettings):
+    return DocumentSummarizer(model=settings.gpt.gpt_model_version,
+                              max_response_tokens=settings.gpt.gpt_max_return_tokens)
+
+
+def initialize_gpt_client(settings: ProjectSettings):
+    return GPTClient(options=GPTOptions(
+        api_key=settings.openai.openai_api_key,
+        model_name=settings.gpt.gpt_model_version,
+        max_message_count=settings.gpt.context_length,
+        temperature=settings.gpt.gpt_model_temperature,
+        max_return_tokens=settings.gpt.gpt_max_return_tokens
+    ))
+
+
+def initialize_gpt_summarizer(settings: ProjectSettings):
+    client = initialize_gpt_client(settings)
+    return GptSummarizer(gpt_client=client)
+
+
+def initialize_youtube_loader():
+    return YouTubeFileLoader()
+
+
+def initialize_publisher(settings: ProjectSettings):
+    return Publisher(server_url=settings.nats_publisher.nats_server_url)
+
+
+def get_components(settings: ProjectSettings) -> SystemComponents:
+    return SystemComponents(
+        repositories_com=initialize_repositories_com(settings),
+        whisper_client=initialize_whisper_client(settings),
+        gpt_client=initialize_gpt_client(settings),
+        assembly_client=initialize_assembly_client(settings),
+        assembly_transcriber=initialize_assembly_transcriber(settings),
+        whisper_transcriber=initialize_whisper_transcriber(settings),
+        lang_chain_summarization=initialize_lang_chain_summarization(settings),
+        gpt_summarizer=initialize_gpt_summarizer(settings),
+        youtube_loader=initialize_youtube_loader(),
+        publisher=initialize_publisher(settings)
+    )
+
+
+def create_commands(system_components: SystemComponents) -> Dict[str, Dict[str, Any]]:
+    commands_container = {
+        "loader": {
+            'youtube': system_components.youtube_loader,
+            's3': None
+        },
+        "transcriber": {
+            'whisper': system_components.whisper_transcriber,
+            'assembly': system_components.assembly_transcriber
+        },
+        "summarizer": {
+            'chat_gpt': system_components.gpt_summarizer,
+            'langchain': system_components.lang_chain_summarization
+        },
+        "publisher": {
+            'nats': system_components.publisher
+        }
+    }
+    return commands_container
+
+
+def create_listener(settings, components, commands):
+    connector = RabbitMQConnector(
+        username=settings.rabbitmq.rabitmq_user,
+        password=settings.rabbitmq.rabitmq_password,
+        port=settings.rabbitmq.rabitmq_port,
+        rabbit_host=settings.rabbitmq.rabitmq_host
+    )
+    connector.utils.commands = commands
+    connector.utils.database_repository = components.repositories_com
+    return connector
+
+
+settings = ProjectSettings()
+components = get_components(settings=settings)
+commands = create_commands(components)
+listener = create_listener(settings=settings,
+                           components=components,
+                           commands=commands,
+                           )

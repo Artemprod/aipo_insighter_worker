@@ -28,6 +28,7 @@ langchain-openai = "^0.1.6"
 alembic = "^1.13.1"
 pytest = "^8.2.0"
 fastapi-cache2 = {extras = ["redis"], version = "^0.2.1"}
+assemblyai = "^0.26.0"
 
 
 
