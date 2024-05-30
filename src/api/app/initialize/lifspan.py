@@ -7,16 +7,14 @@ from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 
-from redis import asyncio as aioredis
 
-from container import settings
 
+from container import settings, components
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    redis = aioredis.from_url("redis://localhost:6379")
-    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+    FastAPICache.init(components.redis, prefix="fastapi-cache")
     # инициализировать подключение к брокеру
     connection: AbstractRobustConnection = await aio_pika.connect_robust(
             f"amqp://{settings.rabbitmq.rabitmq_user}:{settings.rabbitmq.rabitmq_password}@{settings.rabbitmq.rabitmq_host}:{settings.rabbitmq.rabitmq_port}")

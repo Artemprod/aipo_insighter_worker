@@ -51,6 +51,8 @@ class RabitMQConfigs(BaseConfig):
 class NATSPublisherConfigs(BaseConfig):
     nats_server_url: str
 
+class RadisConfigs(BaseConfig):
+    redis_server_url: str
 
 class ProjectSettings(BaseConfig):
     language: str
@@ -61,4 +63,6 @@ class ProjectSettings(BaseConfig):
     postgres: PostgresDataBaseConfigs = Field(default_factory=PostgresDataBaseConfigs)
     rabbitmq: RabitMQConfigs = Field(default_factory=RabitMQConfigs)
     nats_publisher: NATSPublisherConfigs = Field(default_factory=NATSPublisherConfigs)
+    redis: RadisConfigs = Field(default_factory=RadisConfigs)
 
+# print(ProjectSettings())
