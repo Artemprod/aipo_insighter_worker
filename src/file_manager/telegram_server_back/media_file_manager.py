@@ -5,7 +5,7 @@ from aiogram.enums import ContentType
 from aiogram.types import Message
 
 from src.exceptions.format_exceptions import TelegramCantFindFileError
-from src.file_manager.telegram_server.base_file_manager import IMediaFileManager
+from src.file_manager.telegram_server_back.base_file_manager import IMediaFileManager
 from src.utils.logger import insighter_logger
 
 
@@ -16,7 +16,7 @@ class MediaFileManager(IMediaFileManager):
         raise NotImplementedError
 
     @staticmethod
-    async def get_file_id_from_message(message: Message):
+    async def get_file_id_from_message(message: Message) -> str:
         content_type_to_file_id_attr = {
             ContentType.VOICE: "voice",
             ContentType.AUDIO: "audio",
@@ -44,7 +44,7 @@ class MediaFileManager(IMediaFileManager):
             os.path.basename(file.file_path),
         )
 
-    async def get_file(self, message: Message, bot: Bot):
+    async def get_file(self, message: Message, bot: Bot) -> Bot:
         file_id = await self.get_file_id_from_message(message)
         if file_id is None:
             raise TelegramCantFindFileError("File can't be found in the existing file system")

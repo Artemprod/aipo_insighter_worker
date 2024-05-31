@@ -22,3 +22,5 @@ __pycache__/
 # Python Sensitive Files
 *.env
 *.pyc
+
+poetry.lock

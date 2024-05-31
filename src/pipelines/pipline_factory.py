@@ -43,12 +43,19 @@ class PipelineFactory:
         pipeline = Pipeline(self.repo, loader, cropper, transcriber, summarizer, publisher, pipeline_data)
         return pipeline
 
-    def create_storage_pipeline(self, file_path: str):
-        # loader = StorageFileLoader(file_path)
-        # transcriber = SimpleTranscriber()
-        # summarizer = SimpleSummarizer()
-        # weak_pipeline = weakref.ref(Pipeline(loader, cropper, transcriber, summarizer))
-        # return weak_pipeline
-        ...
+    def create_storage_pipeline(self, file_path, output_path, pipeline_data: PiplineData):
+        """
+        Создание конвейера для обработки видео с YouTube.
 
-#
+        :param file_path: PATH FILE.
+        :param output_path: Путь для сохранения обработанных файлов.
+        :param pipeline_data: Данные для конвейера.
+        :return: Инициализированный конвейер.
+        """
+        loader = YouTubeFileLoader(file_path, output_path)
+        cropper = AsyncCropper(self.chunk_length_seconds, output_path)
+        transcriber = WhisperTranscriber(self.transcribe_model)
+        summarizer = DocumentSummarizer(self.llm, self.max_response_tokens)
+        publisher = Publisher(self.server_url)
+        pipeline = Pipeline(self.repo, loader, cropper, transcriber, summarizer, publisher, pipeline_data)
+        return pipeline

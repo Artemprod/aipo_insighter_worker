@@ -5,9 +5,10 @@ from aio_pika.abc import AbstractRobustConnection, AbstractRobustChannel
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
+from redis import asyncio as aioredis
 
 from container import listener
-from redis import asyncio as aioredis
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
