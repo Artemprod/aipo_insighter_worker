@@ -15,7 +15,7 @@ from environs import Env
 #
 # class OpenAiConfigs(BaseSettings):
 #     openai_api_key: str
-#     whisper: WhisperConfigs = Field(default_factory=WhisperConfigs)
+#     whisper_package: WhisperConfigs = Field(default_factory=WhisperConfigs)
 #     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 #
 # class ProjectSettings(BaseSettings):
