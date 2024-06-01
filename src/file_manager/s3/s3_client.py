@@ -2,6 +2,7 @@ import asyncio
 from contextlib import asynccontextmanager
 
 import aiofiles
+from aiobotocore.config import AioConfig
 from aiobotocore.session import get_session
 from botocore.exceptions import ClientError
 from types_aiobotocore_s3.client import S3Client as S3ClientType
@@ -19,6 +20,8 @@ class S3Client:
             "aws_access_key_id": access_key,
             "aws_secret_access_key": secret_key,
             "endpoint_url": endpoint_url,
+            "region_name": 'ru-1',
+            "config": AioConfig(s3={'addressing_style': 'virtual'})
         }
         self.bucket_name = bucket_name
         self.session = get_session()
@@ -84,6 +87,19 @@ class S3Client:
                 return response
         except ClientError as e:
             print(f"Error getting bucket ACL: {e}")
+
+    async def generate_presigned_url(self, key: str) -> str:
+        try:
+            async with self.get_client() as client:
+                client: S3ClientType
+                response = await client.generate_presigned_url(
+                    'get_object',
+                    Params={'Bucket': self.bucket_name, 'Key': key},
+                    ExpiresIn=1488
+                )
+                return response
+        except Exception as err:
+            print(err)
 
 
 async def main():
