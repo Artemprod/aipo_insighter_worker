@@ -1,22 +1,19 @@
 import asyncio
 import os
-import time
-from functools import wraps
+from abc import ABC, abstractmethod
 from multiprocessing import cpu_count
 
 import aiofiles
 from pydub import AudioSegment
 from pydub.utils import make_chunks
 
-from abc import ABC, abstractmethod
-
 
 class BaseCropper(ABC):
 
     def __init__(self, chunk_lents_seconds: int,
-                 output_path:str):
+                 output_path: str):
         self.chunk_length_seconds = chunk_lents_seconds
-        self.output_path=output_path
+        self.output_path = output_path
 
     @abstractmethod
     async def crop_file(self, *args, **kwargs):
@@ -71,6 +68,3 @@ class AsyncCropper(BaseCropper):
 
     async def __call__(self, file_path, max_concurrent_tasks=None):
         return await self.crop_file(file_path, max_concurrent_tasks)
-
-
-

@@ -9,6 +9,8 @@ dev_router = APIRouter(
 )
 
 publisher = Publisher("nats://demo.nats.io:4222")
+
+
 @dev_router.get("/assistant/get_all")
 async def get_all_assistants(request: Request):
     try:
@@ -32,7 +34,6 @@ async def get_one_assistant(request: Request):
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
-
 @dev_router.get("/result/get_transcribed_text")
 async def get_transcribed_text(request: Request):
     try:
@@ -43,6 +44,7 @@ async def get_transcribed_text(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
+
 @dev_router.get("/result/get_summary_text")
 async def get_summary_text(request: Request):
     try:
@@ -51,6 +53,7 @@ async def get_summary_text(request: Request):
         return summary_text
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
 
 @dev_router.post("/start/youtube")
 async def start_youtube(request: Request):
@@ -61,6 +64,7 @@ async def start_youtube(request: Request):
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
 
 @dev_router.post("/start/storage")
 async def start_storage(request: Request):

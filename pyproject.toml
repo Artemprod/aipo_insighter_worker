@@ -2,7 +2,7 @@
 name = "insighter"
 version = "0.1.0"
 description = ""
-authors = ["artemprod <artemprod1@gmail.com>"]
+authors = ["artemprod <artemprod1@gmail.com>", "azamtoiri <azamtoiri@gmail.com"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -28,6 +28,12 @@ langchain-openai = "^0.1.6"
 alembic = "^1.13.1"
 pytest = "^8.2.0"
 fastapi-cache2 = {extras = ["redis"], version = "^0.2.1"}
+loguru = "^0.7.2"
+logtail-python = "^0.2.10"
+notifiers = "^1.3.3"
+paramiko = "^3.4.0"
+aiobotocore = "^2.13.0"
+types-aiobotocore = {extras = ["essential"], version = "^2.13.0"}
 
 
 

@@ -1,13 +1,12 @@
 from typing import Optional
+
 from fastapi import FastAPI
+
 from src.api.app.initialize.lifspan import lifespan
 from src.api.routers.assistant.router import assistant_router
 from src.api.routers.main_process.router import processes_router
 from src.api.routers.results.router import results_router
-
 from src.database.repositories.storage_container import Repositories
-
-
 
 
 def create_server(repositories: Optional[Repositories] = None):

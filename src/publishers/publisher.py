@@ -1,11 +1,10 @@
-import asyncio
 from dataclasses import asdict
 from functools import wraps
+
 import nats
-from nats import NATS
 
 
-# TODO Добавить исходящий BaseModel клас для корректной отпроавки данныех через NATS
+# TODO Добавить исходящий BaseModel клас для корректной отправки данные через NATS
 class Publisher:
 
     def __init__(self, server_url, ):
@@ -18,7 +17,7 @@ class Publisher:
                 nc = await nats.connect(self.server_url)
                 result = await func(*args, **kwargs)
                 await nc.publish(queue, str(result).encode())
-                print('send to adress')
+                print('send to address')
                 await nc.close()
                 return result
 
@@ -32,8 +31,8 @@ class Publisher:
         print('send to adress', queue, end=' ')
         await nc.close()
 
-    async def __call__(self, result,queue):
-        await self.publish_result(result,queue)
+    async def __call__(self, result, queue):
+        await self.publish_result(result, queue)
 
 # p = Publisher("nats://demo.nats.io:4222")
 

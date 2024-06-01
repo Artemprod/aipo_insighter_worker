@@ -1,4 +1,4 @@
-import asyncio
+from abc import ABC, abstractmethod
 
 from langchain.chains import MapReduceDocumentsChain, ReduceDocumentsChain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
@@ -7,8 +7,6 @@ from langchain_core.documents import Document
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import CharacterTextSplitter
-
-from abc import ABC, abstractmethod
 
 from src.consumption.models.consumption.asssistant import AIAssistant
 
@@ -27,11 +25,6 @@ class BaseSummarizer(ABC):
     @abstractmethod
     async def __call__(self, transcribed_text, assistant: AIAssistant):
         pass
-
-
-
-
-
 
 
 class DocumentSummarizer(BaseSummarizer):
@@ -105,4 +98,3 @@ class DocumentSummarizer(BaseSummarizer):
         self.setup_map_reduce_chain()
         split_docs = self.split_docs(text=transcribed_text)
         return self.map_reduce_chain.run(split_docs)
-
