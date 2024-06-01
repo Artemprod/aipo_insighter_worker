@@ -37,9 +37,9 @@ async def start_task_from_storage(message: StartFromStorageMessage,
 @processes_router.post("/start_process_from_youtube")
 async def start_task_from_youtube(message: StartFromYouTubeMessage,
                                   request: Request):
-    processor_exchange_object: AbstractExchange = request.app.state.process_exchange
+    processor_exchange_object: AbstractExchange = request.app.rabit_mq_chanel
     try:
-        await processor_exchange_object.publish(
+        await processor_exchange_object.basic_publish.publish(
             aio_pika.Message(body=message.json().encode(),
                              delivery_mode=DeliveryMode.PERSISTENT),
             routing_key='transcribe_from_youtube_queue', )

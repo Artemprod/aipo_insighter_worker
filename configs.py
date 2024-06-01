@@ -1,6 +1,7 @@
-from typing import Any
+from typing import Any, List
 
 from pydantic import Field
+from pydantic.v1 import validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from dotenv import load_dotenv
@@ -46,6 +47,9 @@ class RabitMQConfigs(BaseConfig):
     rabitmq_password: str
     rabitmq_port: int
     rabitmq_host: str
+    exchangers: dict
+
+
 
 
 class NATSPublisherConfigs(BaseConfig):
