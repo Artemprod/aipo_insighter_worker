@@ -10,10 +10,12 @@ class S3FileLoader(IBaseFileLoader):
     def __init__(self, s3_url):
         self.s3_url: str = s3_url
 
-    async def load(self) -> None:
+    async def load(self) -> str:
         current_directory = os.getcwd()  # Получаем текущую директорию
         destination_filename = os.path.join(current_directory, self.s3_url.split('/')[-1])  # получение имени файла
         await self.download_file_from_url(self.s3_url, destination_path=destination_filename)
+
+        return destination_filename
 
     @staticmethod
     async def download_file_from_url(url: str, destination_path: str) -> None:
