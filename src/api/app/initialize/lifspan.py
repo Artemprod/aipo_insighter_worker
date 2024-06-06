@@ -19,12 +19,17 @@ async def rabit_mq_producer_connection():
         connection: AbstractConnection = await aiormq.connect(
             url=f"amqp://{settings.rabbitmq.rabitmq_user}:{settings.rabbitmq.rabitmq_password}@{settings.rabbitmq.rabitmq_host}:{settings.rabbitmq.rabitmq_port}")
         channel = await connection.channel()
-        for exchange, exchange_type in settings.rabbitmq.exchangers.items():
-            await channel.exchange_declare(exchange=exchange, exchange_type=exchange_type)
+        for srvice, exchanges in settings.rabbitmq.exchangers.items():
+            srvice: dict
+            exchanges: dict
+            for exchange, exchange_type in exchanges.items():
+                exchange: str
+                exchange_type: str
+                await channel.exchange_declare(exchange=exchange, exchange_type=exchange_type)
         print("Initialize rabit producer")
         return channel, connection
     except Exception as e:
-        print("Failed connect to rabit",e)
+        print("Failed connect to rabit", e)
 
 
 @asynccontextmanager
@@ -37,4 +42,3 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
     # закрыть подключение к брокеру
     await connection.close()
-
