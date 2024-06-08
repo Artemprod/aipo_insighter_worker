@@ -146,6 +146,18 @@ class S3Client:
 
 
 async def main():
+    # import environs
+    # env = environs.Env()
+    # env.read_env('.env')
+    # Example usage:
+    # s3_client = S3Client(
+    #     access_key=env("S3_ACCESS_KEY"),
+    #     secret_key=env("S3_SECRET_KEY"),
+    #     endpoint_url="https://s3.storage.selcloud.ru",
+    #     bucket_name='private-insighter-1',
+    # )
+    # await s3_client.upload_file("filename")
+    # uploading file to s3 storage
     ...
 
 
