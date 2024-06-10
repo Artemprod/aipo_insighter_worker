@@ -41,10 +41,9 @@ async def create_pipeline(query_message, utils):
 
 async def run_pipeline(pipeline, pipeline_data, message):
     task = asyncio.create_task(pipeline.run(pipeline_data=pipeline_data))
-
+    await message.channel.basic_ack(delivery_tag=message.delivery.delivery_tag)
     try:
         await task
-        await message.channel.basic_ack(delivery_tag=message.delivery.delivery_tag)
         print(f"Сообщение {message.delivery.routing_key} обработано")
     except Exception as e:
         print(f"Error in pipeline process: {e}")
