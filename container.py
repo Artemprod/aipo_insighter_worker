@@ -18,6 +18,8 @@ from src.services.openai_api_package.whisper_package.whisper import WhisperClien
 from redis import asyncio as aioredis
 from dataclasses import dataclass
 
+from load_rabitmq_configs import load_settings_from_yaml, resolve_references
+
 
 @dataclass
 class SystemComponents:
@@ -32,6 +34,8 @@ class SystemComponents:
     youtube_loader: Any
     publisher: Any
     redis: Any
+    rabit_exchangers:dict
+    rabit_consumers:dict
 
 
 def initialize_asyncfile_cropper():
@@ -101,6 +105,15 @@ def initialize_redis(settings: ProjectSettings):
     redis = aioredis.from_url(settings.redis.redis_server_url)
     return RedisBackend(redis)
 
+def rabit_exchangers():
+    settings = load_settings_from_yaml(r'D:\projects\AIPO_V2\insighter_worker\rabitmq_workers_config.yml')
+    resolved_settings = resolve_references(settings)
+
+    return resolved_settings['exchangers']
+def rabit_consumers():
+    settings = load_settings_from_yaml(r'D:\projects\AIPO_V2\insighter_worker\rabitmq_workers_config.yml')
+    resolved_settings = resolve_references(settings)
+    return resolved_settings['consumers']
 
 def get_components(settings: ProjectSettings) -> SystemComponents:
     return SystemComponents(
@@ -114,7 +127,10 @@ def get_components(settings: ProjectSettings) -> SystemComponents:
         gpt_summarizer=initialize_gpt_summarizer(settings),
         youtube_loader=initialize_youtube_loader(),
         publisher=initialize_publisher(settings),
-        redis=initialize_redis(settings)
+        redis=initialize_redis(settings),
+        rabit_exchangers=rabit_exchangers(),
+        rabit_consumers=rabit_consumers(),
+
     )
 
 

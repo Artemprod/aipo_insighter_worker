@@ -25,10 +25,10 @@ class Consumer:
         self.no_ack = no_ack
 
     async def start(self) -> None:
-        await self.initialize_consumer()
+        await self._initialize_consumer()
         await asyncio.Future()
 
-    async def initialize_consumer(self) -> None:
+    async def _initialize_consumer(self) -> None:
         connection = await self.connector.connect()
         channel = await connection.channel()
 

@@ -16,7 +16,6 @@ class RabbitMQConnector:
     async def connect(self) -> AbstractConnection:
         self.connection: AbstractConnection = await aiormq.connect(
             url=f"amqp://{self.username}:{self.password}@{self.rabbit_host}:{self.port}")
-        self.channel = await self.connection.channel()
         return self.connection
 
     async def close(self):

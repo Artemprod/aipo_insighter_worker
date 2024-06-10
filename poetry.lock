@@ -1672,6 +1672,21 @@ toml = ["tomli (>=2.0.1)"]
 yaml = ["pyyaml (>=6.0.1)"]
 
 [[package]]
+name = "pydantic-settings-yaml"
+version = "0.2.0"
+description = "Yaml support for Pydantic settings"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pydantic_settings_yaml-0.2.0-py2.py3-none-any.whl", hash = "sha256:e5e3a4866d124cc03bff5cca968455ce658f0382a8287c4b14e5fe91a2d6e2ef"},
+    {file = "pydantic_settings_yaml-0.2.0.tar.gz", hash = "sha256:ee3c679ecd04ae045de100458387ff92bb54b435807ca8ac0726c141f63b1c8d"},
+]
+
+[package.dependencies]
+pydantic-settings = ">=2.0,<3.0"
+pyYAML = "*"
+
+[[package]]
 name = "pydub"
 version = "0.25.1"
 description = "Manipulate audio with an simple and easy high level interface"
@@ -2437,4 +2452,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "280fd2db1592bd3e9184ecdea2128bcfddf48aee88ecb31b30a3d5c44228bdc1"
+content-hash = "a6451204c7c4a1fbe31a44acf0a23c29f0859c32a2e5f5e97985ae2587c1ad48"

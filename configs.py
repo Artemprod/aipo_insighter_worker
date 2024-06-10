@@ -42,12 +42,15 @@ class PostgresDataBaseConfigs(BaseConfig):
     database: str
 
 
+# class RabitMQExchangers(BaseConfig)
+
 class RabitMQConfigs(BaseConfig):
     rabitmq_user: str
     rabitmq_password: str
     rabitmq_port: int
     rabitmq_host: str
     exchangers: dict
+
 
 
 
