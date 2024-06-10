@@ -7,27 +7,17 @@ import aiofiles
 from pydub import AudioSegment
 from pydub.utils import make_chunks
 
-<<<<<<< HEAD
-=======
 from abc import ABC, abstractmethod
 
 from src.file_manager.utils.interface import ICropper
->>>>>>> dev_consumer
 
-
-<<<<<<< HEAD
-    def __init__(self, chunk_lents_seconds: int,
-                 output_path: str):
-        self.chunk_length_seconds = chunk_lents_seconds
-        self.output_path = output_path
-=======
 class BaseCropper(ICropper):
 
     def __init__(self,
                  chunk_lents_seconds: int,
                     ):
         self.chunk_length_seconds = chunk_lents_seconds
->>>>>>> dev_consumer
+
 
     async def crop_file(self, *args, **kwargs):
         raise NotImplementedError
@@ -80,13 +70,7 @@ class AsyncCropper(BaseCropper):
         async with semaphore:
             async with aiofiles.open(save_path, 'wb') as f:
                 await f.write(chunk.export(format="mp3").read())
-<<<<<<< HEAD
-                print(save_path)
-
-    async def __call__(self, file_path, max_concurrent_tasks=None):
-        return await self.crop_file(file_path, max_concurrent_tasks)
-=======
 
     async def __call__(self, file_path, output_path, max_concurrent_tasks=None):
         return await self.crop_file(file_path, output_path, max_concurrent_tasks)
->>>>>>> dev_consumer
+
