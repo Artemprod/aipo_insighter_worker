@@ -3,14 +3,17 @@ from functools import wraps
 
 import nats
 
+from src.publishers.interface import IPublisher
 
-# TODO Добавить исходящий BaseModel клас для корректной отправки данные через NATS
-class Publisher:
 
-    def __init__(self, server_url, ):
+
+# TODO Добавить исходящий BaseModel клас для корректной отпроавки данныех через NATS
+class Publisher(IPublisher):
+
+    def __init__(self, server_url,):
         self.server_url = server_url
 
-    def publish(self, queue):
+    def publish_decorator(self, queue):
         def decorator(func):
             @wraps(func)
             async def wrapper(*args, **kwargs):
@@ -25,14 +28,15 @@ class Publisher:
 
         return decorator
 
-    async def publish_result(self, result, queue):
+    async def publish(self, result, queue):
         nc = await nats.connect(self.server_url)
         await nc.publish(queue, str(asdict(result)).encode())
         print('send to adress', queue, end=' ')
         await nc.close()
 
     async def __call__(self, result, queue):
-        await self.publish_result(result, queue)
+        await self.publish(result, queue)
+
 
 # p = Publisher("nats://demo.nats.io:4222")
 
