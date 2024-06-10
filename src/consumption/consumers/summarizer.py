@@ -12,7 +12,6 @@ from langchain_text_splitters import CharacterTextSplitter
 from abc import ABC, abstractmethod
 
 from src.consumption.consumers.interface import ISummarizer
-
 from src.consumption.models.consumption.asssistant import AIAssistant
 from src.services.openai_api_package.chat_gpt_package.client import GPTClient
 from src.services.openai_api_package.chat_gpt_package.model import GPTMessage, GPTRole
@@ -21,8 +20,9 @@ from src.services.openai_api_package.chat_gpt_package.model import GPTMessage, G
 class DocumentSummarizer(ISummarizer):
 
     def __init__(self, model="gpt-3.5-turbo-0125", max_response_tokens=4000):
-        super().__init__(model, max_response_tokens)
-
+        self.model = model
+        self.max_response_tokens = max_response_tokens
+        self.llm = None
         self.map_reduce_chain = None
         self.map_prompt = None
         self.reduce_prompt = None
@@ -103,7 +103,7 @@ class GptSummarizer(ISummarizer):
         self.gpt_client = gpt_client
 
     async def summarize(self, transcribed_text: str, assistant: AIAssistant) -> str:
-        messages: List[GPTMessage] = [GPTMessage(role=GPTRole.USER, content=assistant.user_prompt + transcribed_text)]
+        messages: List[GPTMessage] = [GPTMessage(role=GPTRole.USER, content=assistant.user_prompt + transcribed_text )]
         system_message: GPTMessage = GPTMessage(role=GPTRole.SYSTEM, content=assistant.assistant_prompt)
         return await self.gpt_client.complete(messages, system_message)
 
