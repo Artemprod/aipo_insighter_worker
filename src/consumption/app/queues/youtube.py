@@ -51,7 +51,6 @@ async def run_pipeline(pipeline, pipeline_data, message):
 
 
 async def on_message_from_youtube_queue(message: DeliveredMessage,utils):
-
     query_message = await process_message(message)
     if query_message:
         pipeline, pipeline_data = await create_pipeline(query_message, utils)

@@ -99,3 +99,16 @@ class YoutubePipeline(Pipeline):
             file = await self.loader(pipeline_data.file_destination, temp_file_path)
             transcribed_text = await self.transcriber(file)
             return transcribed_text
+
+
+class S3ipeline(Pipeline):
+    async def _run(self, pipeline_data: PiplineData):
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            temp_file_path = os.path.normpath(
+                os.path.join(str(tmp_dir_name), str(datetime.now().timestamp()),
+                             str(pipeline_data.service_source),
+                             str(pipeline_data.initiator_user_id))
+            )
+            file = await self.loader(pipeline_data.file_destination, temp_file_path)
+            transcribed_text = await self.transcriber(file)
+            return transcribed_text

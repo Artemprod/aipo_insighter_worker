@@ -11,10 +11,7 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from redis import asyncio as aioredis
 
-<<<<<<< HEAD
-from container import listener
 
-=======
 from container import settings, components
 
 
@@ -30,7 +27,7 @@ async def rabit_mq_producer_connection():
         return channel, connection
     except Exception as e:
         print("Failed connect to rabit", e)
->>>>>>> dev_consumer
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:

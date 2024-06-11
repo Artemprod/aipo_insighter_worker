@@ -7,13 +7,12 @@ from src.file_manager.interface import IBaseFileLoader
 
 
 class S3FileLoader(IBaseFileLoader):
-    def __init__(self, s3_url):
-        self.s3_url: str = s3_url
+    def __init__(self):
+        pass
 
-    async def load(self) -> str:
-        current_directory = os.getcwd()  # Получаем текущую директорию
-        destination_filename = os.path.join(current_directory, self.s3_url.split('/')[-1])  # получение имени файла
-        await self.download_file_from_url(self.s3_url, destination_path=destination_filename)
+    async def load(self, s3_url, current_directory: str) -> str:
+        destination_filename = os.path.join(current_directory, s3_url.split('/')[-1])  # получение имени файла
+        await self.download_file_from_url(s3_url, destination_path=destination_filename)
 
         return destination_filename
 

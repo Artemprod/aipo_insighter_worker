@@ -1,4 +1,3 @@
-
 from typing import Any, Dict
 
 from fastapi_cache.backends.redis import RedisBackend
@@ -10,6 +9,7 @@ from src.consumption.consumers.summarizer import DocumentSummarizer, GptSummariz
 from src.consumption.consumers.transcriber import WhisperTranscriber, AssemblyTranscriber
 from src.database.engine.session_maker import DatabaseSessionManager
 from src.database.repositories.storage_container import Repositories
+from src.file_manager.s3.s3_file_loader import S3FileLoader
 from src.file_manager.utils.media_file_cropper import AsyncCropper
 from src.file_manager.youtube.youtube_file_loader import YouTubeFileLoader
 from src.publishers.publisher import Publisher
@@ -23,6 +23,7 @@ from dataclasses import dataclass
 
 from load_rabitmq_configs import load_settings_from_yaml, resolve_references
 
+
 @dataclass
 class SystemComponents:
     repositories_com: Any
@@ -34,10 +35,11 @@ class SystemComponents:
     lang_chain_summarization: Any
     gpt_summarizer: Any
     youtube_loader: Any
+    s3_loader: Any
     publisher: Any
     redis: Any
-    rabit_exchangers:dict
-    rabit_consumers:dict
+    rabit_exchangers: dict
+    rabit_consumers: dict
 
 
 def initialize_asyncfile_cropper():
@@ -98,7 +100,8 @@ def initialize_gpt_summarizer(settings: ProjectSettings):
 def initialize_youtube_loader():
     return YouTubeFileLoader()
 
-
+def initialize_s3_loader():
+    return S3FileLoader()
 def initialize_publisher(settings: ProjectSettings):
     return Publisher(server_url=settings.nats_publisher.nats_server_url)
 
@@ -107,15 +110,19 @@ def initialize_redis(settings: ProjectSettings):
     redis = aioredis.from_url(settings.redis.redis_server_url)
     return RedisBackend(redis)
 
+
 def rabit_exchangers():
     settings = load_settings_from_yaml(r'D:\projects\AIPO_V2\insighter_worker\rabitmq_workers_config.yml')
     resolved_settings = resolve_references(settings)
 
     return resolved_settings['exchangers']
+
+
 def rabit_consumers():
     settings = load_settings_from_yaml(r'D:\projects\AIPO_V2\insighter_worker\rabitmq_workers_config.yml')
     resolved_settings = resolve_references(settings)
     return resolved_settings['consumers']
+
 
 def get_components(settings: ProjectSettings) -> SystemComponents:
     return SystemComponents(
@@ -128,6 +135,7 @@ def get_components(settings: ProjectSettings) -> SystemComponents:
         lang_chain_summarization=initialize_lang_chain_summarization(settings),
         gpt_summarizer=initialize_gpt_summarizer(settings),
         youtube_loader=initialize_youtube_loader(),
+        s3_loader=initialize_s3_loader(),
         publisher=initialize_publisher(settings),
         redis=initialize_redis(settings),
         rabit_exchangers=rabit_exchangers(),
@@ -140,7 +148,7 @@ def create_commands(system_components: SystemComponents) -> Dict[str, Dict[str, 
     commands_container = {
         "loader": {
             'youtube': system_components.youtube_loader,
-            's3': None
+            's3': system_components.s3_loader
         },
         "transcriber": {
             'whisper': system_components.whisper_transcriber,
