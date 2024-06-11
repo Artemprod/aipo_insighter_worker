@@ -1,6 +1,7 @@
 import asyncio
+import uuid
 from contextlib import asynccontextmanager
-
+from pathlib import Path
 import aiofiles
 from aiobotocore.config import AioConfig
 from aiobotocore.session import get_session
@@ -48,9 +49,10 @@ class S3Client:
         """
         This method uploads a file to the S3 bucket.
         :param file_path: The path to the file to be uploaded.
-        :return: None
+        :return: str file name in bucket
         """
-        object_name = file_path.split("/")[-1]
+        #Формируем уникальный id для названия файла и добавляем формат файла
+        object_name = f"{uuid.uuid5(uuid.NAMESPACE_DNS, Path(file_path).name)}.{Path(file_path).name.split('.')[-1]}"
         try:
             async with self.get_client() as client:
                 client: S3ClientType
@@ -61,6 +63,7 @@ class S3Client:
                         Body=await file.read(),
                     )
                 print(f"File {object_name} uploaded to {self.bucket_name}")
+                return object_name
         except ClientError as e:
             print(f"Error uploading file: {e}")
 
@@ -146,19 +149,27 @@ class S3Client:
 
 
 async def main():
-    # import environs
-    # env = environs.Env()
-    # env.read_env('.env')
+
     # Example usage:
-    # s3_client = S3Client(
-    #     access_key=env("S3_ACCESS_KEY"),
-    #     secret_key=env("S3_SECRET_KEY"),
-    #     endpoint_url="https://s3.storage.selcloud.ru",
-    #     bucket_name='private-insighter-1',
-    # )
-    # await s3_client.upload_file("filename")
+    s3_client = S3Client(
+        access_key="b681c9f64dfb4755bd70301bbf9315d2",
+        secret_key="2c952b11c0e3456aae65f622af79ba10",
+        endpoint_url="https://s3.storage.selcloud.ru",
+        bucket_name='private-insighter-1',
+    )
+    obj = await s3_client.upload_file(r"C:\Users\artem\OneDrive\Рабочий стол\Тестовые данные\#33. Операции над множествами, сравнение множеств _ Python для начинающих.mp4")
+    print(obj)
     # uploading file to s3 storage
-    ...
+    # list_1 = await s3_client.get_all_object()
+    # print(list_1)
+    # name_ob = list_1[0]
+    # await s3_client.delete_file(object_name=name_ob)
+    # object = await s3_client.upload_file(object_name=name_ob)
+    key = await s3_client.generate_presigned_url(key=obj)
+    print(key)
+    # print(key)
+    # await s3_client.download_file(object_name="#33. Операции над множествами, сравнение множеств _ Python для начинающих.mp4",destination_path=r"D:\projects\AIPO_V2\insighter_worker\downloaded_file.mp4")
+
 
 
 if __name__ == "__main__":

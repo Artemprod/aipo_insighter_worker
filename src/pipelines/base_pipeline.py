@@ -3,6 +3,7 @@ import os
 import tempfile
 from abc import ABC
 from datetime import datetime
+from pathlib import Path
 
 from src.consumption.consumers.interface import ITranscriber, ISummarizer
 from src.database.repositories.interface import IRepositoryContainer
@@ -101,14 +102,20 @@ class YoutubePipeline(Pipeline):
             return transcribed_text
 
 
-class S3ipeline(Pipeline):
+class S3ipipeline(Pipeline):
     async def _run(self, pipeline_data: PiplineData):
+        if "?" in pipeline_data.file_destination:
+            file_name = Path(pipeline_data.file_destination.split('?')[0]).name
+        else:
+            file_name = Path(pipeline_data.file_destination).name
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             temp_file_path = os.path.normpath(
-                os.path.join(str(tmp_dir_name), str(datetime.now().timestamp()),
+                os.path.join(str(tmp_dir_name),
                              str(pipeline_data.service_source),
-                             str(pipeline_data.initiator_user_id))
+                             str(pipeline_data.initiator_user_id), str(file_name))
             )
-            file = await self.loader(pipeline_data.file_destination, temp_file_path)
+            os.makedirs(os.path.dirname(temp_file_path), exist_ok=True)
+            file = await self.loader(s3_url=pipeline_data.file_destination,
+                                     destination_directory=temp_file_path)
             transcribed_text = await self.transcriber(file)
             return transcribed_text

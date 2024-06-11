@@ -1,5 +1,4 @@
 from typing import Any, Dict
-
 from fastapi_cache.backends.redis import RedisBackend
 
 from configs import ProjectSettings
