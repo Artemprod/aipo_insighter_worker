@@ -28,6 +28,7 @@ class Consumer:
         await self._initialize_consumer()
         await asyncio.Future()
 
+
     async def _initialize_consumer(self) -> None:
         connection = await self.connector.connect()
         channel = await connection.channel()

@@ -8,6 +8,8 @@ from aiobotocore.session import get_session
 from botocore.exceptions import ClientError
 from types_aiobotocore_s3.client import S3Client as S3ClientType
 
+from container import settings
+
 
 class S3Client:
     """
@@ -152,10 +154,10 @@ async def main():
 
     # Example usage:
     s3_client = S3Client(
-        access_key="b681c9f64dfb4755bd70301bbf9315d2",
-        secret_key="2c952b11c0e3456aae65f622af79ba10",
-        endpoint_url="https://s3.storage.selcloud.ru",
-        bucket_name='private-insighter-1',
+        access_key=settings.selectel.access_key,
+        secret_key=settings.selectel.secret_key,
+        endpoint_url=settings.selectel.endpoint_url,
+        bucket_name=settings.selectel.bucket_name,
     )
     obj = await s3_client.upload_file(r"C:\Users\artem\OneDrive\Рабочий стол\Тестовые данные\#33. Операции над множествами, сравнение множеств _ Python для начинающих.mp4")
     print(obj)

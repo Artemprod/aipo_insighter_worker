@@ -1,0 +1,62 @@
+services:
+
+  redis_cache:
+    image: redis
+    env_file:
+      - .env
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    restart: always
+    volumes:
+      - redis_cache:/DB/Redis/data/
+    command: ["redis-server", "--port", "${REDIS_PORT}"]
+    networks:
+      - local_test
+
+  rabbitmq_server:
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: always
+    volumes:
+      - rabbitmq_server:/Rabit/data/
+    networks:
+      - local_test
+
+  insighter_worker:
+    depends_on:
+      - rabbitmq_server
+      - redis_cache
+    image: docker.io/artemprod/insighter_worker:latest
+    volumes:
+      - worker_volume:/var/lib/worker
+    restart: always
+    env_file:
+      - .env
+    command: ["/app/src/consumption/runer.py"]
+    networks:
+      - local_test
+
+  insighter_api_server:
+    depends_on:
+      - rabbitmq_server
+      - redis_cache
+    image: docker.io/artemprod/insighter_worker:latest
+    volumes:
+      - worker_volume:/var/lib/worker
+    restart: always
+    env_file:
+      - .env
+    command: ["/app/src/api/app/server_app_run.py"]
+    networks:
+      - local_test
+
+volumes:
+  redis_cache:
+  rabbitmq_server:
+  worker_volume:
+
+networks:
+  local_test:
+    external: true

@@ -11,7 +11,7 @@ load_dotenv()
 
 class BaseConfig(BaseSettings):
     class Config:
-        env_file = ".env"
+        env_file = "../.env"
         env_file_encoding = "utf-8"
         extra = "ignore"
 
@@ -49,17 +49,24 @@ class RabitMQConfigs(BaseConfig):
     rabitmq_password: str
     rabitmq_port: int
     rabitmq_host: str
-    exchangers: dict
 
 
-
+class SelectelConfigs(BaseConfig):
+    access_key: str
+    secret_key: str
+    endpoint_url: str
+    bucket_name: str
 
 
 class NATSPublisherConfigs(BaseConfig):
     nats_server_url: str
 
+
 class RadisConfigs(BaseConfig):
     redis_server_url: str
+    redis_host: str
+    redis_port: str
+
 
 class ProjectSettings(BaseConfig):
     language: str
@@ -71,5 +78,6 @@ class ProjectSettings(BaseConfig):
     rabbitmq: RabitMQConfigs = Field(default_factory=RabitMQConfigs)
     nats_publisher: NATSPublisherConfigs = Field(default_factory=NATSPublisherConfigs)
     redis: RadisConfigs = Field(default_factory=RadisConfigs)
+    selectel: SelectelConfigs = Field(default_factory=SelectelConfigs)
 
 # print(ProjectSettings())

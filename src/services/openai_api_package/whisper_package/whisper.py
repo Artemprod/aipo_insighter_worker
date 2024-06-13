@@ -1,5 +1,5 @@
 import openai
-from configs import WhisperConfigs
+from project_configs.configs import WhisperConfigs
 
 
 class WhisperClient:
