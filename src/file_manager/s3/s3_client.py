@@ -2,6 +2,7 @@ import asyncio
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
+
 import aiofiles
 from aiobotocore.config import AioConfig
 from aiobotocore.session import get_session
@@ -53,7 +54,7 @@ class S3Client:
         :param file_path: The path to the file to be uploaded.
         :return: str file name in bucket
         """
-        #Формируем уникальный id для названия файла и добавляем формат файла
+        # Формируем уникальный id для названия файла и добавляем формат файла
         object_name = f"{uuid.uuid5(uuid.NAMESPACE_DNS, Path(file_path).name)}.{Path(file_path).name.split('.')[-1]}"
         try:
             async with self.get_client() as client:
@@ -131,9 +132,10 @@ class S3Client:
         except ClientError as e:
             print(f"Error getting bucket ACL: {e}")
 
-    async def generate_presigned_url(self, key: str) -> str:
+    async def generate_presigned_url(self, key: str, ExpiresIn: int = 1488) -> str:
         """
         This method generates a presigned URL for the object with the given key.
+        :param ExpiresIn: the time of link will be available (sec)
         :param key: Object name for which the presigned URL is to be generated.
         :return: str: Presigned URL for the object. [Expires in 1488 seconds default]
         """
@@ -143,15 +145,28 @@ class S3Client:
                 response = await client.generate_presigned_url(
                     'get_object',
                     Params={'Bucket': self.bucket_name, 'Key': key},
-                    ExpiresIn=1488
+                    ExpiresIn=ExpiresIn
                 )
+                return response
+        except Exception as err:
+            print(err)
+
+    async def get_object_data(self, key) -> dict:
+        """
+        Get information of object, like when was created and how size of the object
+        :param key: Object Name
+        :return: dict
+        """
+        try:
+            async with self.get_client() as client:
+                client: S3ClientType
+                response = await client.head_object(Bucket=self.bucket_name, Key=key)
                 return response
         except Exception as err:
             print(err)
 
 
 async def main():
-
     # Example usage:
     s3_client = S3Client(
         access_key=settings.selectel.access_key,
@@ -159,7 +174,8 @@ async def main():
         endpoint_url=settings.selectel.endpoint_url,
         bucket_name=settings.selectel.bucket_name,
     )
-    obj = await s3_client.upload_file(r"C:\Users\artem\OneDrive\Рабочий стол\Тестовые данные\#33. Операции над множествами, сравнение множеств _ Python для начинающих.mp4")
+    obj = await s3_client.upload_file(
+        r"C:\Users\artem\OneDrive\Рабочий стол\Тестовые данные\#33. Операции над множествами, сравнение множеств _ Python для начинающих.mp4")
     print(obj)
     # uploading file to s3 storage
     # list_1 = await s3_client.get_all_object()
@@ -171,7 +187,6 @@ async def main():
     print(key)
     # print(key)
     # await s3_client.download_file(object_name="#33. Операции над множествами, сравнение множеств _ Python для начинающих.mp4",destination_path=r"D:\projects\AIPO_V2\insighter_worker\downloaded_file.mp4")
-
 
 
 if __name__ == "__main__":
