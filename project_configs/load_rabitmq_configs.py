@@ -33,22 +33,21 @@ def resolve_references(config_data):
             resolved_config["consumers"][consumer_name] = consumer_details
     return resolved_config
 
-def find_config_file(root_path:str, file_name:str):
+
+def find_config_file(root_path: str, file_name: str):
     root_dir = pathlib.Path(root_path)
     # Имя файла, который необходимо найти
 
     # Поиск файла
     file_path = next(root_dir.rglob(file_name), None)
     if file_path:
-        print(f"Файл найден: {file_path}")
+        # print(f"Файл найден: {file_path}")
         return str(file_path)
     else:
-        print("Файл не найден")
+        # print("Файл не найден")
         return None
+
 
 path = find_config_file("..", "rabitmq_workers_config.yml")
 settings = load_settings_from_yaml(path)
 resolved_settings = resolve_references(settings)
-
-
-
