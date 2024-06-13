@@ -35,6 +35,7 @@ services:
     env_file:
       - .env
     command: ["/app/src/consumption/runer.py"]
+
     networks:
       - local_test
 
@@ -49,6 +50,8 @@ services:
     env_file:
       - .env
     command: ["/app/src/api/app/server_app_run.py"]
+    ports:
+      - "9192:9192"
     networks:
       - local_test
 

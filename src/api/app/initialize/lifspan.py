@@ -25,6 +25,7 @@ async def rabit_mq_producer_connection():
 @retry(TypeError, tries=5, delay=5)
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    print("Запущен инициализатор при сервере")
     FastAPICache.init(components.redis, prefix="fastapi-cache")
     channel, connection = await rabit_mq_producer_connection()
     app.state.rabit_mq_chanel = channel
