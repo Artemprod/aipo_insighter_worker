@@ -120,7 +120,6 @@ def rabit_exchangers():
 def rabit_consumers():
     return resolved_settings['consumers']
 
-
 def get_components(settings: ProjectSettings) -> SystemComponents:
     return SystemComponents(
         repositories_com=initialize_repositories_com(settings),
