@@ -1,10 +1,8 @@
-from typing import Any, List
-
-from pydantic import Field
-from pydantic.v1 import validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
 
 from dotenv import load_dotenv
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 load_dotenv()
 
@@ -17,59 +15,59 @@ class BaseConfig(BaseSettings):
 
 
 class WhisperConfigs(BaseConfig):
-    whisper_model_version: str
-    whisper_model_temperature: str
+    whisper_model_version: str = 'whisper-1'
+    whisper_model_temperature: str = '0.8'
 
 
 class GPTConfigs(BaseConfig):
-    gpt_model_version: str
-    gpt_model_temperature: float
-    context_length: int
-    gpt_max_return_tokens: int
+    gpt_model_version: Optional[str] = '3.5-turbo'
+    gpt_model_temperature: Optional[float] = 1.00
+    context_length: Optional[int] = 1
+    gpt_max_return_tokens: Optional[int] = 1
 
 
 class AssemblyConfigs(BaseConfig):
-    assembly_api_key: str
-    speaker_label: bool
+    assembly_api_key: Optional[str] = ''
+    speaker_label: Optional[bool] = False
 
 
 class OpenAiConfigs(BaseConfig):
-    openai_api_key: str
+    openai_api_key: str = ''
 
 
 class PostgresDataBaseConfigs(BaseConfig):
-    postgres_url: str
-    database: str
+    postgres_url: Optional[str] = 'postgresql+asyncpg://postgres:1234@localhost:5432/'
+    database: Optional[str] = 'text_process'
 
 
 # class RabitMQExchangers(BaseConfig)
 
 class RabitMQConfigs(BaseConfig):
-    rabitmq_user: str
-    rabitmq_password: str
-    rabitmq_port: int
-    rabitmq_host: str
+    rabitmq_user: Optional[str] = 'guest'
+    rabitmq_password: Optional[str] = 'guest'
+    rabitmq_port: int = 15672
+    rabitmq_host: str = 'http://localhost'
 
 
 class SelectelConfigs(BaseConfig):
-    access_key: str
-    secret_key: str
-    endpoint_url: str
-    bucket_name: str
+    access_key: str = ''
+    secret_key: str = ''
+    endpoint_url: str = 'https://s3.storage.selcloud.ru'
+    bucket_name: str = 'private-insighter-1'
 
 
 class NATSPublisherConfigs(BaseConfig):
-    nats_server_url: str
+    nats_server_url: Optional[str] = ''
 
 
 class RadisConfigs(BaseConfig):
-    redis_server_url: str
-    redis_host: str
-    redis_port: str
+    redis_server_url: str = 'redis://'
+    redis_host: str = 'localhost'
+    redis_port: str = '6379'
 
 
 class ProjectSettings(BaseConfig):
-    language: str
+    language: str = 'ru'
     whisper: WhisperConfigs = Field(default_factory=WhisperConfigs)
     gpt: GPTConfigs = Field(default_factory=GPTConfigs)
     assembly: AssemblyConfigs = Field(default_factory=AssemblyConfigs)
