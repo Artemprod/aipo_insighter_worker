@@ -5,6 +5,8 @@ from abc import ABC
 from datetime import datetime
 from pathlib import Path
 
+from loguru import logger
+
 from src.consumption.consumers.interface import ITranscriber, ISummarizer
 from src.database.repositories.interface import IRepositoryContainer
 from src.file_manager.interface import IBaseFileLoader
@@ -52,26 +54,31 @@ class Pipeline(ABC):
             # Получение помощника для суммаризации
             assistant = await self.repo.assistant_repository.get(assistant_id=pipeline_data.assistant_id)
             # Суммаризация текста
-
+            logger.info("Начинаю саммаризацию")
             summary = await self.summarizer(transcribed_text=transcribed_text,
                                             assistant=assistant)
+            if not summary:
+                logger.info("Нету саммари")
+                await self.cleanup()
+                return None
+            else:
+                logger.info("саммари получено")
+                # Сохранение суммарного текста
+                summary_text_model = await self.repo.summary_text_repository.save(
+                    text=summary,
+                    transcribed_text_id=text_model.id,
+                    user_id=pipeline_data.initiator_user_id,
+                    service_source=pipeline_data.service_source,
+                    summary_date=datetime.now()
+                )
 
-            # Сохранение суммарного текста
-            summary_text_model = await self.repo.summary_text_repository.save(
-                text=summary,
-                transcribed_text_id=text_model.id,
-                user_id=pipeline_data.initiator_user_id,
-                service_source=pipeline_data.service_source,
-                summary_date=datetime.now()
-            )
+                # Публикация результата суммарного текста
+                await self.publisher(
+                    result=SummaryTextTrigger(tex_id=summary_text_model.id, user_id=pipeline_data.initiator_user_id),
+                    queue=pipeline_data.publisher_queue
+                )
 
-            # Публикация результата суммарного текста
-            await self.publisher(
-                result=SummaryTextTrigger(tex_id=summary_text_model.id, user_id=pipeline_data.initiator_user_id),
-                queue=pipeline_data.publisher_queue
-            )
-
-            return summary
+                return summary
         except Exception as e:
             # Улучшенное логирование ошибок
             logger.info(f"An error occurred: {e}")
@@ -91,6 +98,7 @@ class Pipeline(ABC):
 class YoutubePipeline(Pipeline):
 
     async def _run(self, pipeline_data: PiplineData):
+        logger.info("запуск YoutubePipeline")
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             temp_file_path = os.path.normpath(
                 os.path.join(str(tmp_dir_name), str(datetime.now().timestamp()),
@@ -99,11 +107,16 @@ class YoutubePipeline(Pipeline):
             )
             file = await self.loader(pipeline_data.file_destination, temp_file_path)
             transcribed_text = await self.transcriber(file)
-            return transcribed_text
+            if transcribed_text:
+                logger.info("получен транскрибированый текст из YoutubePipeline")
+                return transcribed_text
+            else:
+                return None
 
 
 class S3ipipeline(Pipeline):
     async def _run(self, pipeline_data: PiplineData):
+        logger.info("запуск S3ipipeline")
         if "?" in pipeline_data.file_destination:
             file_name = Path(pipeline_data.file_destination.split('?')[0]).name
         else:
@@ -118,4 +131,8 @@ class S3ipipeline(Pipeline):
             file = await self.loader(s3_url=pipeline_data.file_destination,
                                      destination_directory=temp_file_path)
             transcribed_text = await self.transcriber(file)
-            return transcribed_text
+            if transcribed_text:
+                logger.info("получен транскрибированый текст из S3ipipeline")
+                return transcribed_text
+            else:
+                return None
