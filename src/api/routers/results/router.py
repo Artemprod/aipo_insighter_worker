@@ -2,6 +2,7 @@ from dataclasses import asdict
 
 from fastapi import HTTPException
 from fastapi import APIRouter
+from loguru import logger
 from starlette.requests import Request
 
 from src.consumption.models.consumption.summarization import SummaryText
@@ -16,7 +17,7 @@ results_router = APIRouter(
 @results_router.get("/get_transcribed_text")
 async def get_transcribed_text_from_database(id_text: int,
                                              request: Request):
-    print("Income data", id_text)
+    logger.info("Income data", id_text)
     try:
         text: TranscribedText = await request.app.repositories.transcribed_text_repository.get(text_id=id_text)
 

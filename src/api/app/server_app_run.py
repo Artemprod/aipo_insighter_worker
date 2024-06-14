@@ -6,4 +6,9 @@ import uvicorn
 server = create_server(repositories=components.repositories_com)
 
 if __name__ == "__main__":
-    uvicorn.run("server_app_run:server", host="0.0.0.0", port=9192, lifespan="on")
+    uvicorn.run("server_app_run:server",
+                host="0.0.0.0",
+                port=9192,
+                lifespan="on",
+                log_level="debug",
+                reload=True)

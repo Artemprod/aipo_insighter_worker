@@ -1,4 +1,6 @@
 import openai
+from loguru import logger
+
 from project_configs.configs import WhisperConfigs
 
 
@@ -39,6 +41,6 @@ class WhisperClient:
     async def send_request(self, whisper_args: dict) -> str:
         response = await self.client.audio.transcriptions.create(**whisper_args)
         if response.text:
-            print("response from whisper_package received")
+            logger.info("response from whisper_package received")
         return response.text
 

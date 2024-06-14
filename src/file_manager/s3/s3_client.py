@@ -6,6 +6,7 @@ import aiofiles
 from aiobotocore.config import AioConfig
 from aiobotocore.session import get_session
 from botocore.exceptions import ClientError
+from loguru import logger
 from types_aiobotocore_s3.client import S3Client as S3ClientType
 
 from container import settings
@@ -64,10 +65,10 @@ class S3Client:
                         Key=object_name,
                         Body=await file.read(),
                     )
-                print(f"File {object_name} uploaded to {self.bucket_name}")
+                logger.info(f"File {object_name} uploaded to {self.bucket_name}")
                 return object_name
         except ClientError as e:
-            print(f"Error uploading file: {e}")
+            logger.info(f"Error uploading file: {e}")
 
     async def delete_file(self, object_name: str):
         """
@@ -79,9 +80,9 @@ class S3Client:
             async with self.get_client() as client:
                 client: S3ClientType
                 await client.delete_object(Bucket=self.bucket_name, Key=object_name)
-                print(f"File {object_name} deleted from {self.bucket_name}")
+                logger.info(f"File {object_name} deleted from {self.bucket_name}")
         except ClientError as e:
-            print(f"Error deleting file: {e}")
+            logger.info(f"Error deleting file: {e}")
 
     async def download_file(self, object_name: str, destination_path: str):
         """
@@ -97,9 +98,9 @@ class S3Client:
                 data = await response["Body"].read()
                 async with aiofiles.open(destination_path, "wb") as file:
                     await file.write(data)
-                print(f"File {object_name} downloaded to {destination_path}")
+                logger.info(f"File {object_name} downloaded to {destination_path}")
         except ClientError as e:
-            print(f"Error downloading file: {e}")
+            logger.info(f"Error downloading file: {e}")
 
     async def get_all_object(self) -> list[str]:
         """
@@ -114,7 +115,7 @@ class S3Client:
                     return [obj['Key'] for obj in response['Contents']]
                 return []
         except ClientError as e:
-            print(f"Error listing objects: {e}")
+            logger.info(f"Error listing objects: {e}")
             return []
 
     async def get_bucket_access_control_list(self):
@@ -129,7 +130,7 @@ class S3Client:
                 response = await client.get_bucket_acl(Bucket=self.bucket_name)
                 return response
         except ClientError as e:
-            print(f"Error getting bucket ACL: {e}")
+            logger.info(f"Error getting bucket ACL: {e}")
 
     async def generate_presigned_url(self, key: str) -> str:
         """

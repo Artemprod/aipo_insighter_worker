@@ -2,6 +2,7 @@ import asyncio
 import os
 
 from aiogram.client.session import aiohttp
+from loguru import logger
 
 from src.file_manager.interface import IBaseFileLoader
 
@@ -25,7 +26,7 @@ class S3FileLoader(IBaseFileLoader):
                         if not chunk:
                             break
                         file.write(chunk)
-                print(f"File downloaded to {destination_path}")
+                logger.info(f"File downloaded to {destination_path}")
 
     async def __call__(self, s3_url, destination_directory: str):
         return await self.load(s3_url, destination_directory)

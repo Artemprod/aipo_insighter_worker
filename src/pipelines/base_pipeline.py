@@ -74,7 +74,7 @@ class Pipeline(ABC):
             return summary
         except Exception as e:
             # Улучшенное логирование ошибок
-            print(f"An error occurred: {e}")
+            logger.info(f"An error occurred: {e}")
             return None
         finally:
             # Очистка ресурсов

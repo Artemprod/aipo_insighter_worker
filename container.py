@@ -1,8 +1,6 @@
 from typing import Any, Dict
 from fastapi_cache.backends.redis import RedisBackend
-
 from project_configs.configs import ProjectSettings
-
 from src.consumption.app.connector import RabbitMQConnector
 from src.consumption.consumers.summarizer import DocumentSummarizer, GptSummarizer
 from src.consumption.consumers.transcriber import WhisperTranscriber, AssemblyTranscriber

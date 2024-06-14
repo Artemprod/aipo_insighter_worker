@@ -2,6 +2,7 @@ from dataclasses import asdict
 from functools import wraps
 
 import nats
+from loguru import logger
 
 from src.publishers.interface import IPublisher
 
@@ -20,7 +21,7 @@ class Publisher(IPublisher):
                 nc = await nats.connect(self.server_url)
                 result = await func(*args, **kwargs)
                 await nc.publish(queue, str(result).encode())
-                print('send to address')
+                logger.info('send to address')
                 await nc.close()
                 return result
 
@@ -31,23 +32,10 @@ class Publisher(IPublisher):
     async def publish(self, result, queue):
         nc = await nats.connect(self.server_url)
         await nc.publish(queue, str(asdict(result)).encode())
-        print('send to adress', queue, end=' ')
+        logger.info('send to adress', queue, end=' ')
         await nc.close()
 
     async def __call__(self, result, queue):
         await self.publish(result, queue)
 
 
-# p = Publisher("nats://demo.nats.io:4222")
-
-
-# @p.publish(queue="foo")
-# async def message_handler_sum(string:str):
-#     c = string.upper()
-#     print(f"Message Published: {c}")
-#     return c
-#     # Возвращаем строку, предполагая, что это пример
-
-
-# if __name__ == '__main__':
-#     asyncio.run(message_handler_sum("Hello NATS!"))
