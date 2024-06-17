@@ -44,7 +44,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option(DB_URL)
+    url = config.get_main_option(settings.postgres.postgres_url)
     context.configure(
         url=url,
         target_metadata=target_metadata,
