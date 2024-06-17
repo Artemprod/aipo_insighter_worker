@@ -1,7 +1,10 @@
+import asyncio
 import os
 
 import pytest
 
+from container import settings
+from src.file_manager.s3.s3_client import S3Client
 from src.file_manager.s3.s3_file_loader import S3FileLoader
 
 
@@ -23,3 +26,24 @@ def test_load(s3_url, monkeypatch):
     destination_filename = os.path.join(current_directory, s3_url.split('/')[-1])
     assert os.path.exists(destination_filename)
     os.remove(destination_filename)  # Clean up after test
+
+
+@pytest.mark.parametrize("file_name", [
+    'test_files/some_txt_file.txt'
+])
+@pytest.mark.asyncio
+async def test_upload_file_and_delete_file(file_name):
+    import requests
+    client = S3Client(
+        access_key=settings.selectel.access_key,
+        secret_key=settings.selectel.secret_key,
+        endpoint_url=settings.selectel.endpoint_url,
+        bucket_name=settings.selectel.bucket_name
+    )
+    object_name = await client.upload_file(file_path=file_name)
+    url = await client.generate_presigned_url(object_name)
+    response = requests.get(url)
+    assert response.status_code == 200
+    await client.delete_file(object_name)
+    response = requests.get(url)
+    assert response.status_code == 404
