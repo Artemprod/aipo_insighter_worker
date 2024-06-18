@@ -176,7 +176,7 @@ async def main():
         bucket_name=settings.selectel.bucket_name,
     )
     obj = await s3_client.upload_file(
-        r"C:\Users\artem\OneDrive\Рабочий стол\Тестовые данные\#33. Операции над множествами, сравнение множеств _ Python для начинающих.mp4")
+        r"C:\Users\artem\OneDrive\Рабочий стол\Тестовые данные\audio1510462956_формат_не.m4a")
     print(obj)
     # uploading file to s3 storage
     # list_1 = await s3_client.get_all_object()
