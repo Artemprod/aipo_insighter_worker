@@ -1,6 +1,7 @@
 import asyncio
 from typing import Callable
 from src.consumption.app.connector import RabbitMQConnector
+from loguru import logger
 
 
 class Consumer:
@@ -14,7 +15,6 @@ class Consumer:
                  prefetch_count: int = 1,
                  no_ack: bool = False
                  ) -> None:
-
         self.connector = connector
         self.queue = queue
         self.routing_key = routing_key
@@ -25,6 +25,7 @@ class Consumer:
         self.no_ack = no_ack
 
     async def start(self) -> None:
+        logger.info("Запуск потребителя")
         await self._initialize_consumer()
         await asyncio.Future()
 

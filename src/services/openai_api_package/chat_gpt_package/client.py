@@ -26,7 +26,6 @@ class GPTClient:
                 "max_tokens": self.options.max_return_tokens,
 
             }
-            print()
             return await self._request(gpt_args)
 
     async def _request(self, gpt_args: dict) -> str:

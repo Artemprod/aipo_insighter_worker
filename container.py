@@ -1,9 +1,6 @@
 from typing import Any, Dict
-
 from fastapi_cache.backends.redis import RedisBackend
-
-from configs import ProjectSettings
-
+from project_configs.configs import ProjectSettings
 from src.consumption.app.connector import RabbitMQConnector
 from src.consumption.consumers.summarizer import DocumentSummarizer, GptSummarizer
 from src.consumption.consumers.transcriber import WhisperTranscriber, AssemblyTranscriber
@@ -21,7 +18,7 @@ from src.services.openai_api_package.whisper_package.whisper import WhisperClien
 from redis import asyncio as aioredis
 from dataclasses import dataclass
 
-from load_rabitmq_configs import load_settings_from_yaml, resolve_references
+from project_configs.load_rabitmq_configs import resolved_settings
 
 
 @dataclass
@@ -100,8 +97,11 @@ def initialize_gpt_summarizer(settings: ProjectSettings):
 def initialize_youtube_loader():
     return YouTubeFileLoader()
 
+
 def initialize_s3_loader():
     return S3FileLoader()
+
+
 def initialize_publisher(settings: ProjectSettings):
     return Publisher(server_url=settings.nats_publisher.nats_server_url)
 
@@ -112,17 +112,11 @@ def initialize_redis(settings: ProjectSettings):
 
 
 def rabit_exchangers():
-    settings = load_settings_from_yaml(r'D:\projects\AIPO_V2\insighter_worker\rabitmq_workers_config.yml')
-    resolved_settings = resolve_references(settings)
-
     return resolved_settings['exchangers']
 
 
 def rabit_consumers():
-    settings = load_settings_from_yaml(r'D:\projects\AIPO_V2\insighter_worker\rabitmq_workers_config.yml')
-    resolved_settings = resolve_references(settings)
     return resolved_settings['consumers']
-
 
 def get_components(settings: ProjectSettings) -> SystemComponents:
     return SystemComponents(

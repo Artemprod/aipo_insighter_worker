@@ -1,5 +1,9 @@
 import aiormq
+from aiormq import AMQPConnectionError
 from aiormq.abc import AbstractConnection
+from loguru import logger
+from retry import retry
+
 from src.consumption.models.rabit.utils import Modules
 
 
@@ -13,7 +17,9 @@ class RabbitMQConnector:
         self.rabbit_host = rabbit_host
         self.utils = Modules
 
+    @retry(AMQPConnectionError, tries=5, delay=5)
     async def connect(self) -> AbstractConnection:
+        logger.info("Устанавливается соединение")
         self.connection: AbstractConnection = await aiormq.connect(
             url=f"amqp://{self.username}:{self.password}@{self.rabbit_host}:{self.port}")
         return self.connection

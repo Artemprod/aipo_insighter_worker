@@ -1,7 +1,8 @@
 import asyncio
-import logging
+
 
 from aiormq.abc import DeliveredMessage
+from loguru import logger
 
 from src.api.routers.main_process.schemas import StartFromYouTubeMessage
 from src.pipelines.base_pipeline import YoutubePipeline
@@ -9,11 +10,11 @@ from src.pipelines.models import PiplineData
 
 
 async def process_message(message: DeliveredMessage):
-    print(f"Received message: {message.body.decode()}")
+    logger.info(f"Received message: {message.body.decode()}")
     try:
         query_message = StartFromYouTubeMessage.parse_raw(message.body.decode('utf-8'))
     except ValueError as e:
-        print(f"Error parsing message: {e}")
+        logger.info(f"Error parsing message: {e}")
         await message.channel.basic_nack(delivery_tag=message.delivery.delivery_tag, requeue=False)
         return None
     return query_message
@@ -44,9 +45,9 @@ async def run_pipeline(pipeline, pipeline_data, message):
     await message.channel.basic_ack(delivery_tag=message.delivery.delivery_tag)
     try:
         await task
-        print(f"Сообщение {message.delivery.routing_key} обработано")
+        logger.info(f"Сообщение {message.delivery.routing_key} обработано")
     except Exception as e:
-        print(f"Error in pipeline process: {e}")
+        logger.info(f"Error in pipeline process: {e}")
         await message.channel.basic_nack(delivery_tag=message.delivery.delivery_tag, requeue=False)
 
 

@@ -1,0 +1,31 @@
+#version: "3.8"
+#services:
+#
+#  redis_insighter:
+#    image: redis
+#    ports:
+#      - "7085:7085"
+#    restart: always
+#    volumes:
+#      - redis_insighter_volume:/DB/Redis/insighter/data/db
+#    command: ["redis-server", "--port", "7085"]
+#    networks:
+#      - insighter_worker_stage
+#
+#  insighter_bot:
+#    image: docker.io/artemprod/insighter_bot:${IMAGE_TAG:-latest}
+#    volumes:
+#      - shared_volume:/var/lib/telegram-bot-api
+#    restart: always
+#    env_file:
+#      - .env
+#    networks:
+#      - insighter_worker_stage
+#
+#volumes:
+#  redis_insighter_volume:
+#  shared_volume:
+#
+#networks:
+#  insighter_worker_stage:
+#    external: true
