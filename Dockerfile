@@ -16,8 +16,5 @@ COPY pyproject.toml poetry.lock ./
 
 RUN poetry config virtualenvs.create false && poetry install --no-root
 
-
-
 COPY . ./
 
-ENTRYPOINT ["poetry", "run", "python"]

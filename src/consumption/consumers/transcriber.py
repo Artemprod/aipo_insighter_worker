@@ -1,6 +1,8 @@
 import asyncio
 from typing import List, BinaryIO, Union
 
+from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
+
 from src.consumption.consumers.interface import ITranscriber
 from src.file_manager.utils.interface import ICropper
 from src.services.assembly.client import AssemblyClient
@@ -44,14 +46,10 @@ class AssemblyTranscriber:
         transcriber = self.assembly_client.Transcriber()
         future_transcript = transcriber.transcribe_async(file_path, config=config)
         transcript = future_transcript.result()
-
-        if not transcript.utterances:
-            raise ValueError("No response from assembly")
-
         text = ""
         for utterance in transcript.utterances:
             text += f"Speaker {utterance.speaker}: {utterance.text}\n\n"
         return text
 
-    async def __call__(self, file_path: str) -> str:
+    async def __call__(self, file_path: Union[str, BinaryIO]) -> str:
         return await self.transcribe(file_path)
