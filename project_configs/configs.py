@@ -36,8 +36,13 @@ class OpenAiConfigs(BaseConfig):
 
 
 class PostgresDataBaseConfigs(BaseConfig):
-    postgres_url: Optional[str] = 'postgresql+asyncpg://postgres:1234@localhost:5432/'
-    database: Optional[str] = 'text_process'
+    postgres_url: Optional[str]
+    driver: Optional[str]
+    user: Optional[str]
+    password: Optional[str]
+    host: Optional[str]
+    port: Optional[str]
+    database: Optional[str]
 
 
 # class RabitMQExchangers(BaseConfig)
@@ -57,7 +62,9 @@ class SelectelConfigs(BaseConfig):
 
 
 class NATSPublisherConfigs(BaseConfig):
-    nats_server_url: Optional[str] = ''
+    nats_server_url: Optional[str] = 'nats://localhost:8222'
+    nats_port: Optional[str] = '8222'
+    nats_host: Optional[str] = 'localhost'
 
 
 class RadisConfigs(BaseConfig):
