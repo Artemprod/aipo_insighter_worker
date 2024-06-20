@@ -91,6 +91,7 @@ jobs:
         - name: Cleanup services if they exist
           if: steps.check_services.outputs.services_exist == 'true'
           run: |
+            echo "${{ vars.STAGE_ENV_FILE }}" >> ./deploy/stage/.env
             docker --context stage_worker_context compose -f deploy/stage/docker-compose.yml down
             docker --context stage_worker_context system prune -af
 
