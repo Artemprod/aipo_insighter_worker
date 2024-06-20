@@ -18,7 +18,7 @@ services:
       - local_test
 
   migration:
-    image: docker.io/artemprod/insighter_worker:latest
+    image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
     container_name: migration_alembic
     depends_on:
       - postgres_db
@@ -75,7 +75,7 @@ services:
       - redis_cache
       - postgres_db
       - migration
-    image: docker.io/artemprod/insighter_worker:latest
+    image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
     volumes:
       - worker_volume:/var/lib/worker
     restart: always
@@ -93,7 +93,7 @@ services:
       - postgres_db
       - migration
 
-    image: docker.io/artemprod/insighter_worker:latest
+    image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
     volumes:
       - worker_volume:/var/lib/worker
     restart: always
