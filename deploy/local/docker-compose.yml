@@ -101,7 +101,6 @@ services:
     env_file:
       - .env
     command: ["poetry", "run", "python","/app/src/api/app/server_app_run.py"]
-
     ports:
       - "9192:9192"
     networks:
