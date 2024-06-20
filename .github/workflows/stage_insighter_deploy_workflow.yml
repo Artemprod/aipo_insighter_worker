@@ -71,7 +71,7 @@ jobs:
             ssh-private-key: ${{secrets.STAGE_PRIVATE_KEY}}
 
         - name: Add SSH key to known_hosts
-          run: ssh-keyscan -H "${{vars.STAGE_HOST_ADRESS}}" >> ~/.ssh/known_hosts
+          run: ssh-keyscan -H "${{vars.STAGE_HOST_ADDRESS}}" >> ~/.ssh/known_hosts
 
         - name: Create Docker Context
           run: docker context create stage_worker_context --docker "host=ssh://${{ vars.STAGE_SSH_ADDRESS }}" || true
@@ -116,7 +116,7 @@ jobs:
             ssh-private-key: ${{secrets.STAGE_PRIVATE_KEY}}
 
         - name: Add SSH key to known_hosts
-          run: ssh-keyscan -H "${{vars.STAGE_HOST_ADRESS}}" >> ~/.ssh/known_hosts
+          run: ssh-keyscan -H "${{vars.STAGE_HOST_ADDRESS}}" >> ~/.ssh/known_hosts
 
         - name: Create Docker Context
           run: docker context create stage_worker_context --docker "host=ssh://${{ vars.STAGE_SSH_ADDRESS }}" || true
@@ -150,11 +150,11 @@ jobs:
 #          with:
 #            ssh-private-key: ${{secrets.STAGE_PRIVATE_KEY}}
 #        - name: Add SSH key to known_hosts
-#          run: ssh-keyscan -H "${{vars.STAGE_HOST_ADRESS}}" >> ~/.ssh/known_hosts
+#          run: ssh-keyscan -H "${{vars.STAGE_HOST_ADDRESS}}" >> ~/.ssh/known_hosts
 #        - name: Deploy
 #          run: |
 #            echo "${{vars.STAGE_ENV_FILE}}" >> ./deploy/stage/.env
-#            docker context create stage_worker_context --docker "host=ssh://${{vars.STAGE_SSH_ADRESS}}" || true
+#            docker context create stage_worker_context --docker "host=ssh://${{vars.STAGE_SSH_ADDRESS}}" || true
 #            docker --context stage_worker_context compose -f deploy/stage/docker-compose.yml down insighter_worker insighter_api_server
 #            docker --context stage_worker_context system prune -af
 #            export IMAGE_TAG=sha-${{ steps.set_sha.outputs.sha_short }}
