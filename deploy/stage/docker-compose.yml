@@ -1,31 +1,121 @@
-#version: "3.8"
-#services:
-#
-#  redis_insighter:
-#    image: redis
-#    ports:
-#      - "7085:7085"
-#    restart: always
-#    volumes:
-#      - redis_insighter_volume:/DB/Redis/insighter/data/db
-#    command: ["redis-server", "--port", "7085"]
-#    networks:
-#      - insighter_worker_stage
-#
-#  insighter_bot:
-#    image: docker.io/artemprod/insighter_bot:${IMAGE_TAG:-latest}
-#    volumes:
-#      - shared_volume:/var/lib/telegram-bot-api
-#    restart: always
-#    env_file:
-#      - .env
-#    networks:
-#      - insighter_worker_stage
-#
-#volumes:
-#  redis_insighter_volume:
-#  shared_volume:
-#
-#networks:
-#  insighter_worker_stage:
-#    external: true
+services:
+
+  postgres_db:
+    container_name: postgres_container
+    image: postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: "${DATABASE}"
+      POSTGRES_PASSWORD: "${PASSWORD}"
+      POSTGRES_USER: "${USER}"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    ports:
+      - "${PORT}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - insighter_worker_stage_new
+
+  migration:
+    image: docker.io/artemprod/insighter_worker:latest
+    container_name: migration_alembic
+    depends_on:
+      - postgres_db
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "${POSTGRES_URL}"
+    command: ["/bin/sh", "/app/deploy/local/database_migration/migration.sh"]
+    networks:
+      - insighter_worker_stage_new
+
+
+  redis_cache:
+    image: redis
+    container_name: server_redis_cache
+    env_file:
+      - .env
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    restart: always
+    volumes:
+      - redis_cache:/DB/Redis/data/
+    command: ["redis-server", "--port", "${REDIS_PORT}"]
+    networks:
+      - insighter_worker_stage_new
+
+  nats:
+    image: nats
+    container_name: nats_worker
+    env_file:
+      - .env
+    ports:
+      - "${NATS_PORT}:${NATS_PORT}"
+      - "8222:8222"
+    restart: always
+    volumes:
+      - nats:/DB/nats/data/
+    networks:
+      - insighter_worker_stage_new
+
+  rabbitmq_server:
+    image: rabbitmq:management
+    container_name: rabbit_worker
+    ports:
+      - "${RABITMQ_PORT}:${RABITMQ_PORT}"
+      - "15672:15672"
+    restart: always
+    volumes:
+      - rabbitmq_server:/Rabit/data/
+    networks:
+      - insighter_worker_stage_new
+
+  insighter_worker:
+    depends_on:
+      - nats
+      - rabbitmq_server
+      - redis_cache
+      - postgres_db
+      - migration
+    image: docker.io/artemprod/insighter_worker:latest
+    container_name: insighter_worker
+    volumes:
+      - worker_volume:/var/lib/worker
+    restart: always
+    env_file:
+      - .env
+    command: ["poetry", "run", "python","/app/src/consumption/runer.py"]
+    networks:
+      - insighter_worker_stage_new
+
+  insighter_api_server:
+    depends_on:
+      - nats
+      - rabbitmq_server
+      - redis_cache
+      - postgres_db
+      - migration
+    container_name: insighter_api_server
+    image: docker.io/artemprod/insighter_worker:latest
+    volumes:
+      - worker_volume:/var/lib/worker
+    restart: always
+    env_file:
+      - .env
+    command: ["poetry", "run", "python","/app/src/api/app/server_app_run.py"]
+    ports:
+      - "9192:9192"
+    networks:
+      - insighter_worker_stage_new
+
+volumes:
+  redis_cache:
+  postgres-data:
+  nats:
+  rabbitmq_server:
+  worker_volume:
+
+networks:
+  insighter_worker_stage_new:
+    external: true
