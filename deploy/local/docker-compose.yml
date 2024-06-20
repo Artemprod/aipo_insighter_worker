@@ -11,14 +11,14 @@ services:
       POSTGRES_USER: "${POSTGRES_USER}"
       PGDATA: "/var/lib/postgresql/data/pgdata"
     ports:
-      - "${PORT}:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - local_test
 
   migration:
-    image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
+    image: docker.io/artemprod/insighter_worker:sha-932fce2
     container_name: migration_alembic
     depends_on:
       - postgres_db
@@ -75,7 +75,8 @@ services:
       - redis_cache
       - postgres_db
       - migration
-    image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
+    image: docker.io/artemprod/insighter_worker:sha-932fce2
+
     volumes:
       - worker_volume:/var/lib/worker
     restart: always
@@ -93,7 +94,8 @@ services:
       - postgres_db
       - migration
 
-    image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
+    image: docker.io/artemprod/insighter_worker:sha-932fce2
+
     volumes:
       - worker_volume:/var/lib/worker
     restart: always

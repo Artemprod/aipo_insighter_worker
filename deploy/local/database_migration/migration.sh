@@ -1,6 +1,11 @@
 #!/bin/sh
 # migration.sh
 
+
+set -e
+# Переход в директорию /app
+cd /app
+
 # Создание новой ревизии
 alembic revision --autogenerate -m "Initial tables"
 

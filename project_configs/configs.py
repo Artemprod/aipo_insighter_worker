@@ -90,4 +90,4 @@ class ProjectSettings(BaseConfig):
     redis: RadisConfigs = Field(default_factory=RadisConfigs)
     selectel: SelectelConfigs = Field(default_factory=SelectelConfigs)
 
-print(ProjectSettings())
+# print(ProjectSettings())
