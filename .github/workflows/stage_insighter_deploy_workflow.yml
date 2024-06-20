@@ -94,6 +94,8 @@ jobs:
             echo "${{ vars.STAGE_ENV_FILE }}" >> ./deploy/stage/.env
             docker --context stage_worker_context compose -f deploy/stage/docker-compose.yml down
             docker --context stage_worker_context system prune -af
+            docker --context stage_worker_context network create insighter_worker_stage_new
+            
 
     deploy:
       needs: cleanup
