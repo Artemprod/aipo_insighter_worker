@@ -44,8 +44,7 @@ def initialize_asyncfile_cropper():
 
 
 def initialize_database_session_manager(settings: ProjectSettings):
-    database = f'{settings.postgres.postgres_url}/{settings.postgres.database}'
-    return DatabaseSessionManager(database_url=database)
+    return DatabaseSessionManager(database_url=settings.postgres.postgres_url)
 
 
 def initialize_repositories_com(settings: ProjectSettings):

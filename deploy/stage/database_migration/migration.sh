@@ -8,4 +8,4 @@ alembic revision --autogenerate -m "Initial tables"
 alembic upgrade head
 
 # Вставка данных
-python /app/deploy/stage/database_migration/insert_data.py
+python /app/deploy/local/database_migration/insert_data.py

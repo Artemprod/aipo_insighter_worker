@@ -41,12 +41,12 @@ class OpenAiConfigs(BaseConfig):
 
 class PostgresDataBaseConfigs(BaseConfig):
     postgres_url: Optional[str]
-    driver: Optional[str]
-    user: Optional[str]
-    password: Optional[str]
-    host: Optional[str]
-    port: Optional[str]
-    database: Optional[str]
+    postgres_driver: Optional[str]
+    postgres_user: Optional[str]
+    postgres_password: Optional[str]
+    postgres_host: Optional[str]
+    postgres_port: Optional[str]
+    postgres_database: Optional[str]
 
 
 # class RabitMQExchangers(BaseConfig)
@@ -90,4 +90,4 @@ class ProjectSettings(BaseConfig):
     redis: RadisConfigs = Field(default_factory=RadisConfigs)
     selectel: SelectelConfigs = Field(default_factory=SelectelConfigs)
 
-# print(ProjectSettings())
+print(ProjectSettings())
