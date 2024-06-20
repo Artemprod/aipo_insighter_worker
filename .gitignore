@@ -13,9 +13,14 @@ __pycache__/
 # Mac
 .DS_Store
 
+# poetry
+*.lock
+
 # Jupyter Notebook
 .ipynb_checkpoints
 
 # Python Sensitive Files
 *.env
 *.pyc
+
+poetry.lock
