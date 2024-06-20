@@ -5,6 +5,7 @@ set -e
 # Переход в директорию /app
 cd /app
 
+mkdir -p migration/versions
 # Создание новой ревизии
 alembic revision --autogenerate -m "Initial tables"
 
