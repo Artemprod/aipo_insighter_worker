@@ -13,7 +13,7 @@ from src.database.repositories.interface import IRepositoryContainer
 from src.file_manager.interface import IBaseFileLoader
 from src.pipelines.models import PiplineData
 from src.publishers.interface import IPublisher
-from src.publishers.models import TranscribedTextTrigger, SummaryTextTrigger, PublishTrigger
+from src.publishers.models import PublishTrigger
 from src.utils.path_opertaions import parse_path, create_temp_path, clear_temp_dir
 
 
