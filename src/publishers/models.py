@@ -2,12 +2,9 @@ from dataclasses import dataclass
 
 
 @dataclass
-class TranscribedTextTrigger:
+class PublishTrigger:
+    type:str
     tex_id: str
     user_id: int
 
 
-@dataclass
-class SummaryTextTrigger:
-    tex_id: str
-    user_id: int

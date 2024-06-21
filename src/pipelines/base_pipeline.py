@@ -13,7 +13,7 @@ from src.database.repositories.interface import IRepositoryContainer
 from src.file_manager.interface import IBaseFileLoader
 from src.pipelines.models import PiplineData
 from src.publishers.interface import IPublisher
-from src.publishers.models import TranscribedTextTrigger, SummaryTextTrigger
+from src.publishers.models import TranscribedTextTrigger, SummaryTextTrigger, PublishTrigger
 from src.utils.path_opertaions import parse_path, create_temp_path, clear_temp_dir
 
 
@@ -80,7 +80,7 @@ class Pipeline(ABC):
 
     async def publish_transcribed_text(self, text_model, pipeline_data: PiplineData):
         await self.publisher(
-            result=TranscribedTextTrigger(tex_id=text_model.id, user_id=pipeline_data.initiator_user_id),
+            result=PublishTrigger(type="transcribation", tex_id=text_model.id, user_id=pipeline_data.initiator_user_id),
             queue=pipeline_data.publisher_queue
         )
 
@@ -95,7 +95,8 @@ class Pipeline(ABC):
 
     async def publish_summary_text(self, summary_text_model, pipeline_data: PiplineData):
         await self.publisher(
-            result=SummaryTextTrigger(tex_id=summary_text_model.id, user_id=pipeline_data.initiator_user_id),
+            result=PublishTrigger(type='summary', tex_id=summary_text_model.id,
+                                  user_id=pipeline_data.initiator_user_id),
             queue=pipeline_data.publisher_queue
         )
 

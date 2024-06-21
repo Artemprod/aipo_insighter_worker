@@ -7,11 +7,10 @@ from loguru import logger
 from src.publishers.interface import IPublisher
 
 
-
 # TODO Добавить исходящий BaseModel клас для корректной отпроавки данныех через NATS
 class Publisher(IPublisher):
 
-    def __init__(self, server_url,):
+    def __init__(self, server_url, ):
         self.server_url = server_url
 
     def publish_decorator(self, queue):
@@ -21,7 +20,7 @@ class Publisher(IPublisher):
                 nc = await nats.connect(self.server_url)
                 result = await func(*args, **kwargs)
                 await nc.publish(queue, str(result).encode())
-                logger.info('send to address')
+                logger.info(f'send to address in queue {queue}')
                 await nc.close()
                 return result
 
@@ -37,5 +36,3 @@ class Publisher(IPublisher):
 
     async def __call__(self, result, queue):
         await self.publish(result, queue)
-
-
