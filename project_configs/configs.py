@@ -14,6 +14,10 @@ class BaseConfig(BaseSettings):
         extra = "ignore"
 
 
+class UvicornServer(BaseConfig):
+    uvicorn_host: str = "0.0.0.0"
+
+
 class WhisperConfigs(BaseConfig):
     whisper_model_version: str = 'whisper-1'
     whisper_model_temperature: str = '0.8'
@@ -37,15 +41,15 @@ class OpenAiConfigs(BaseConfig):
 
 class PostgresDataBaseConfigs(BaseConfig):
     postgres_url: Optional[str]
-    driver: Optional[str]
-    user: Optional[str]
-    password: Optional[str]
-    host: Optional[str]
-    port: Optional[str]
-    database: Optional[str]
+    postgres_driver: Optional[str]
+    postgres_user: Optional[str]
+    postgres_password: Optional[str]
+    postgres_host: Optional[str]
+    postgres_port: Optional[str]
+    postgres_database: Optional[str]
 
 
-# class RabitMQExchangers(BaseConfig)
+
 
 class RabitMQConfigs(BaseConfig):
     rabitmq_user: Optional[str] = 'guest'
@@ -76,6 +80,7 @@ class RadisConfigs(BaseConfig):
 class ProjectSettings(BaseConfig):
     language: str = 'ru'
     whisper: WhisperConfigs = Field(default_factory=WhisperConfigs)
+    uvicorn_server: UvicornServer = Field(default_factory=UvicornServer)
     gpt: GPTConfigs = Field(default_factory=GPTConfigs)
     assembly: AssemblyConfigs = Field(default_factory=AssemblyConfigs)
     openai: OpenAiConfigs = Field(default_factory=OpenAiConfigs)
@@ -86,3 +91,5 @@ class ProjectSettings(BaseConfig):
     selectel: SelectelConfigs = Field(default_factory=SelectelConfigs)
 
 # print(ProjectSettings())
+
+

@@ -6,14 +6,16 @@ from abc import ABC
 from datetime import datetime
 from pathlib import Path
 
+from faststream.nats import NatsBroker
 from loguru import logger
 
+from container import settings
 from src.consumption.consumers.interface import ITranscriber, ISummarizer
 from src.database.repositories.interface import IRepositoryContainer
 from src.file_manager.interface import IBaseFileLoader
 from src.pipelines.models import PiplineData
 from src.publishers.interface import IPublisher
-from src.publishers.models import TranscribedTextTrigger, SummaryTextTrigger
+from src.publishers.models import PublishTrigger
 from src.utils.path_opertaions import parse_path, create_temp_path, clear_temp_dir
 
 
@@ -32,42 +34,36 @@ class Pipeline(ABC):
         self.summarizer = summarizer
         self.publisher = publisher
 
-    async def _run(self, pipeline_data: PiplineData):
-        raise NotImplementedError
+
 
     async def run(self, pipeline_data: PiplineData) -> str | None:
-        temp_file_path = None
-        try:
-            temp_file_path = await self._run(pipeline_data)
-            file = await self.loader(pipeline_data.file_destination, temp_file_path)
-            transcribed_text = await self.transcriber(file)
 
-            if not transcribed_text:
-                logger.info("Нету транскрибированного текста")
-                return None
-
-            text_model = await self.save_transcribed_text(transcribed_text, pipeline_data)
-            await self.publish_transcribed_text(text_model, pipeline_data)
-
-            assistant = await self.repo.assistant_repository.get(assistant_id=pipeline_data.assistant_id)
-            summary = await self.summarizer(transcribed_text=transcribed_text, assistant=assistant)
-
-            if not summary:
-                logger.info("Нету саммари")
-                return None
-
-            summary_text_model = await self.save_summary_text(summary, text_model.id, pipeline_data)
-            await self.publish_summary_text(summary_text_model, pipeline_data)
-
-            return summary
-
-        except Exception as e:
-            logger.error(f"An error occurred: {e}", exc_info=True)
+        file_name = parse_path(path=pipeline_data.file_destination)
+        temp_file_path = create_temp_path(file_name=file_name,
+                                          user_id=pipeline_data.initiator_user_id)
+        file = await self.loader(pipeline_data.file_destination, temp_file_path)
+        transcribed_text = await self.transcriber(file)
+        if not transcribed_text:
+            logger.info("Нету транскрибированного текста")
             return None
-        finally:
-            if temp_file_path:
-                clear_temp_dir(temp_file_path)
-            await self.cleanup()
+
+        text_model = await self.save_transcribed_text(transcribed_text, pipeline_data)
+        await self.publish_transcribed_text(text_model, pipeline_data)
+
+        assistant = await self.repo.assistant_repository.get(assistant_id=pipeline_data.assistant_id)
+        summary = await self.summarizer(transcribed_text=transcribed_text, assistant=assistant)
+
+        if not summary:
+            logger.info("Нету саммари")
+            return None
+
+        summary_text_model = await self.save_summary_text(summary, text_model.id, pipeline_data)
+        await self.publish_summary_text(summary_text_model, pipeline_data)
+
+        if temp_file_path:
+            clear_temp_dir(temp_file_path)
+
+        return summary
 
     async def save_transcribed_text(self, transcribed_text: str, pipeline_data: PiplineData):
         return await self.repo.transcribed_text_repository.save(
@@ -78,11 +74,15 @@ class Pipeline(ABC):
             transcription_time=datetime.now()
         )
 
-    async def publish_transcribed_text(self, text_model, pipeline_data: PiplineData):
-        await self.publisher(
-            result=TranscribedTextTrigger(tex_id=text_model.id, user_id=pipeline_data.initiator_user_id),
-            queue=pipeline_data.publisher_queue
-        )
+    @staticmethod
+    async def publish_transcribed_text(text_model, pipeline_data: PiplineData):
+        async with NatsBroker(servers=settings.nats_publisher.nats_server_url) as broker:
+            await broker.publish(
+                message=PublishTrigger(type="transcribation",
+                                       tex_id=int(text_model.id),
+                                       user_id=int(pipeline_data.initiator_user_id)),
+                subject=f"{pipeline_data.publisher_queue}.transcribe",
+            )
 
     async def save_summary_text(self, summary: str, transcribed_text_id: str, pipeline_data: PiplineData):
         return await self.repo.summary_text_repository.save(
@@ -93,42 +93,14 @@ class Pipeline(ABC):
             summary_date=datetime.now()
         )
 
-    async def publish_summary_text(self, summary_text_model, pipeline_data: PiplineData):
-        await self.publisher(
-            result=SummaryTextTrigger(tex_id=summary_text_model.id, user_id=pipeline_data.initiator_user_id),
-            queue=pipeline_data.publisher_queue
-        )
-
-    async def cleanup(self):
-        self.loader = None
-        self.publisher = None
-        self.transcriber = None
-        self.summarizer = None
-        gc.collect()
+    @staticmethod
+    async def publish_summary_text(summary_text_model, pipeline_data: PiplineData):
+        async with NatsBroker(servers=settings.nats_publisher.nats_server_url) as broker:
+            await broker.publish(
+                message=PublishTrigger(type="summary",
+                                       tex_id=int(summary_text_model.id),
+                                       user_id=int(pipeline_data.initiator_user_id)),
+                subject=f"{pipeline_data.publisher_queue}.summary",
 
 
-class YoutubePipeline(Pipeline):
-
-    async def _run(self, pipeline_data: PiplineData):
-        logger.info("запуск YoutubePipeline")
-        try:
-            temp_file_path = create_temp_path(file_name=None,
-                                              user_id=pipeline_data.initiator_user_id)
-            return temp_file_path
-        except Exception as e:
-            logger.exception(f"Ошибка создания временной директории {e}")
-
-
-class S3ipipeline(Pipeline):
-
-    async def _run(self, pipeline_data: PiplineData) -> str:
-        logger.info("запуск S3ipipeline")
-        try:
-
-            file_name = parse_path(path=pipeline_data.file_destination)
-            temp_file_path = create_temp_path(file_name=file_name,
-                                              user_id=pipeline_data.initiator_user_id)
-
-            return temp_file_path
-        except Exception as e:
-            logger.exception(f"Ошибка создания временной директории {e}")
+            )

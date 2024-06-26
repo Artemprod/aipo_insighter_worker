@@ -13,7 +13,5 @@ class YouTubeFileLoader(IBaseFileLoader):
         output_file = audio_stream.download(output_path=output_path)
         return os.path.normpath(output_file)
 
-
-
     async def __call__(self, youtube_url, output_path) -> str:
         return await self.load(youtube_url, output_path)

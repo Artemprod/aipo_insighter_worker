@@ -21,7 +21,7 @@ async def main():
                 exchange=configs['exchanger']['name'],
                 exchange_type=configs['exchanger']['type'],
                 func=partial(on_message_from_youtube_queue, utils=listener.utils),
-                prefetch_count=3,
+                prefetch_count=2,
                 no_ack=False
             )
             consumers.append(consumer_instance)
@@ -34,7 +34,7 @@ async def main():
                 exchange=configs['exchanger']['name'],
                 exchange_type=configs['exchanger']['type'],
                 func=partial(on_message_from_s3, utils=listener.utils),
-                prefetch_count=3,
+                prefetch_count=2,
                 no_ack=False
             )
             consumers.append(consumer_instance)
@@ -43,6 +43,5 @@ async def main():
 
 
 if __name__ == "__main__":
-
     asyncio.run(main())
 

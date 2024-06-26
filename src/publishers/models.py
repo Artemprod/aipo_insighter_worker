@@ -1,13 +1,9 @@
 from dataclasses import dataclass
 
-
-@dataclass
-class TranscribedTextTrigger:
-    tex_id: str
-    user_id: int
+from pydantic import BaseModel
 
 
-@dataclass
-class SummaryTextTrigger:
-    tex_id: str
+class PublishTrigger(BaseModel):
+    type: str
+    tex_id: int
     user_id: int

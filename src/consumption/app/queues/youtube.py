@@ -1,22 +1,17 @@
 import asyncio
-
+import json
 
 from aiormq.abc import DeliveredMessage
 from loguru import logger
 
 from src.api.routers.main_process.schemas import StartFromYouTubeMessage
-from src.pipelines.base_pipeline import YoutubePipeline
+from src.pipelines.base_pipeline import Pipeline
 from src.pipelines.models import PiplineData
 
 
-async def process_message(message: DeliveredMessage):
-    logger.info(f"Received message: {message.body.decode()}")
-    try:
-        query_message = StartFromYouTubeMessage.parse_raw(message.body.decode('utf-8'))
-    except ValueError as e:
-        logger.info(f"Error parsing message: {e}")
-        await message.channel.basic_nack(delivery_tag=message.delivery.delivery_tag, requeue=False)
-        return None
+async def process_message(message):
+    logger.info(f"Received message: {message}")
+    query_message = StartFromYouTubeMessage(**message)
     return query_message
 
 
@@ -29,29 +24,23 @@ async def create_pipeline(query_message, utils):
         file_destination=query_message.youtube_url,
     )
 
-    pipeline = YoutubePipeline(
-        repo=utils.database_repository,
-        loader=utils.commands['loader']['youtube'],
-        transcriber=utils.commands['transcriber']['assembly'],
-        summarizer=utils.commands['summarizer']['chat_gpt'],
-        publisher=utils.commands['publisher']['nats'],
+    pipeline: Pipeline = Pipeline(
+        repo=utils.get("database_repository"),
+        loader=utils.get("commands")['loader']['youtube'],
+        transcriber=utils.get("commands")['transcriber']['assembly'],
+        summarizer=utils.get("commands")['summarizer']['chat_gpt'],
+        publisher=utils.get("commands")['publisher']['nats'],
     )
 
     return pipeline, pipeline_data
 
 
 async def run_pipeline(pipeline, pipeline_data, message):
-    task = asyncio.create_task(pipeline.run(pipeline_data=pipeline_data))
-    await message.channel.basic_ack(delivery_tag=message.delivery.delivery_tag)
-    try:
-        await task
-        logger.info(f"Сообщение {message.delivery.routing_key} обработано")
-    except Exception as e:
-        logger.info(f"Error in pipeline process: {e}")
-        await message.channel.basic_nack(delivery_tag=message.delivery.delivery_tag, requeue=False)
+    await pipeline.run(pipeline_data=pipeline_data)
+    logger.info(f"Сообщение {message} обработано")
 
 
-async def on_message_from_youtube_queue(message: DeliveredMessage,utils):
+async def on_message_from_youtube_queue(message, utils):
     query_message = await process_message(message)
     if query_message:
         pipeline, pipeline_data = await create_pipeline(query_message, utils)

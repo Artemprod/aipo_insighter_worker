@@ -16,7 +16,7 @@ class StartFromYouTubeMessage(BaseModel):
 class StartFromYouTubeErrorResponse(BaseModel):
     user_id: int = Field()
     youtube_url: str = Field()
-    description: str
+    description: Optional[str] = None
 
 
 class StartFromStorageMessage(BaseModel):
