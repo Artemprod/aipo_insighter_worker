@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 
+from pydantic import BaseModel
 
-@dataclass
-class PublishTrigger:
-    type:str
-    tex_id: str
+
+class PublishTrigger(BaseModel):
+    type: str
+    tex_id: int
     user_id: int
-
-

@@ -39,6 +39,7 @@ pydantic-settings-yaml = "^0.2.0"
 psycopg2-binary = "^2.9.9"
 retry = "^0.9.2"
 pytest-asyncio = "^0.23.7"
+faststream = "^0.5.14"
 
 
 

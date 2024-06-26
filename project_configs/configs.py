@@ -49,7 +49,7 @@ class PostgresDataBaseConfigs(BaseConfig):
     postgres_database: Optional[str]
 
 
-# class RabitMQExchangers(BaseConfig)
+
 
 class RabitMQConfigs(BaseConfig):
     rabitmq_user: Optional[str] = 'guest'
@@ -91,3 +91,5 @@ class ProjectSettings(BaseConfig):
     selectel: SelectelConfigs = Field(default_factory=SelectelConfigs)
 
 # print(ProjectSettings())
+
+
