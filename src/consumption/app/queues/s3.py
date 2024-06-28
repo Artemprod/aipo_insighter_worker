@@ -29,7 +29,7 @@ async def create_pipeline(query_message, utils):
         loader=utils.get("commands")['loader']['s3'],
         transcriber=utils.get("commands")['transcriber']['assembly'],
         summarizer=utils.get("commands")['summarizer']['chat_gpt'],
-        publisher=utils.get("commands")['publisher']['nats'],
+
     )
 
     return pipeline, pipeline_data

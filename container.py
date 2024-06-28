@@ -9,7 +9,6 @@ from src.database.repositories.storage_container import Repositories
 from src.file_manager.s3.s3_file_loader import S3FileLoader
 from src.file_manager.utils.media_file_cropper import AsyncCropper
 from src.file_manager.youtube.youtube_file_loader import YouTubeFileLoader
-from src.publishers.publisher import Publisher
 from src.services.assembly.client import AssemblyClient
 from src.services.openai_api_package.chat_gpt_package.client import GPTClient
 from src.services.openai_api_package.chat_gpt_package.model import GPTOptions
@@ -33,7 +32,6 @@ class SystemComponents:
     gpt_summarizer: Any
     youtube_loader: Any
     s3_loader: Any
-    publisher: Any
     redis: Any
     rabit_exchangers: dict
     rabit_consumers: dict
@@ -101,8 +99,7 @@ def initialize_s3_loader():
     return S3FileLoader()
 
 
-def initialize_publisher(settings: ProjectSettings):
-    return Publisher(server_url=settings.nats_publisher.nats_server_url)
+
 
 
 def initialize_redis(settings: ProjectSettings):
@@ -129,7 +126,6 @@ def get_components(settings: ProjectSettings) -> SystemComponents:
         gpt_summarizer=initialize_gpt_summarizer(settings),
         youtube_loader=initialize_youtube_loader(),
         s3_loader=initialize_s3_loader(),
-        publisher=initialize_publisher(settings),
         redis=initialize_redis(settings),
         rabit_exchangers=rabit_exchangers(),
         rabit_consumers=rabit_consumers(),
@@ -151,9 +147,8 @@ def create_commands(system_components: SystemComponents) -> Dict[str, Dict[str, 
             'chat_gpt': system_components.gpt_summarizer,
             'langchain': system_components.lang_chain_summarization
         },
-        "publisher": {
-            'nats': system_components.publisher
-        }
+
+
     }
     return commands_container
 

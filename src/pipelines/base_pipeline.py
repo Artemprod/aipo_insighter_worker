@@ -1,21 +1,19 @@
-import gc
-import os
-import shutil
-import tempfile
+
 from abc import ABC
 from datetime import datetime
-from pathlib import Path
+
 
 from faststream.nats import NatsBroker
 from loguru import logger
 
 from container import settings
 from src.consumption.consumers.interface import ITranscriber, ISummarizer
+from src.consumption.models.publisher.triger import PublishTrigger
 from src.database.repositories.interface import IRepositoryContainer
 from src.file_manager.interface import IBaseFileLoader
 from src.pipelines.models import PiplineData
-from src.publishers.interface import IPublisher
-from src.publishers.models import PublishTrigger
+
+
 from src.utils.path_opertaions import parse_path, create_temp_path, clear_temp_dir
 
 
@@ -26,13 +24,13 @@ class Pipeline(ABC):
                  loader: IBaseFileLoader,
                  transcriber: ITranscriber,
                  summarizer: ISummarizer,
-                 publisher: IPublisher):
+               ):
 
         self.repo = repo
         self.loader = loader
         self.transcriber = transcriber
         self.summarizer = summarizer
-        self.publisher = publisher
+
 
 
 
@@ -83,15 +81,7 @@ class Pipeline(ABC):
                                        user_id=int(pipeline_data.initiator_user_id)),
                 subject=f"{pipeline_data.publisher_queue}.transcribe",
             )
-
-    async def save_summary_text(self, summary: str, transcribed_text_id: str, pipeline_data: PiplineData):
-        return await self.repo.summary_text_repository.save(
-            text=summary,
-            transcribed_text_id=transcribed_text_id,
-            user_id=pipeline_data.initiator_user_id,
-            service_source=pipeline_data.service_source,
-            summary_date=datetime.now()
-        )
+            logger.info("Отправил транскрибацию")
 
     @staticmethod
     async def publish_summary_text(summary_text_model, pipeline_data: PiplineData):
@@ -102,5 +92,16 @@ class Pipeline(ABC):
                                        user_id=int(pipeline_data.initiator_user_id)),
                 subject=f"{pipeline_data.publisher_queue}.summary",
 
-
             )
+            logger.info("Отправил саммари")
+
+    async def save_summary_text(self, summary: str, transcribed_text_id: str, pipeline_data: PiplineData):
+        return await self.repo.summary_text_repository.save(
+            text=summary,
+            transcribed_text_id=transcribed_text_id,
+            user_id=pipeline_data.initiator_user_id,
+            service_source=pipeline_data.service_source,
+            summary_date=datetime.now()
+        )
+
+
