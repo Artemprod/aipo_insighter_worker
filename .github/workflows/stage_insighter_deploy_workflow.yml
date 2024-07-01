@@ -94,7 +94,9 @@ jobs:
             echo "${{ vars.STAGE_ENV_FILE }}" >> ./deploy/stage/.env
             docker --context stage_worker_context compose -f deploy/stage/docker-compose.yml down
             docker --context stage_worker_context system prune -af
+            if ! docker --context stage_worker_context network ls --filter name=insighter_worker_stage_new --format '{{.Name}}' | grep -w insighter_worker_stage_new; then
             docker --context stage_worker_context network create insighter_worker_stage_new
+            fi
             
 
     deploy:

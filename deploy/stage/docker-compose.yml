@@ -106,7 +106,8 @@ services:
     command: ["make", "run_worker"]
     networks:
       - insighter_worker_stage_new
-      -
+
+
   insighter_worker_3:
     depends_on:
       - nats
