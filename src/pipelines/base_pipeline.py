@@ -77,6 +77,7 @@ class Pipeline(ABC):
         async with NatsBroker(servers=settings.nats_publisher.nats_server_url) as broker:
             await broker.publish(
                 message=PublishTrigger(type="transcribation",
+                                       unique_id=pipeline_data.unique_id,
                                        tex_id=int(text_model.id),
                                        user_id=int(pipeline_data.initiator_user_id)),
                 subject=f"{pipeline_data.publisher_queue}.transcribe",
@@ -88,6 +89,7 @@ class Pipeline(ABC):
         async with NatsBroker(servers=settings.nats_publisher.nats_server_url) as broker:
             await broker.publish(
                 message=PublishTrigger(type="summary",
+                                       unique_id=pipeline_data.unique_id,
                                        tex_id=int(summary_text_model.id),
                                        user_id=int(pipeline_data.initiator_user_id)),
                 subject=f"{pipeline_data.publisher_queue}.summary",
