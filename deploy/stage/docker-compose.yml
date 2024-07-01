@@ -26,7 +26,7 @@ services:
       - .env
     environment:
       DATABASE_URL: "${POSTGRES_URL}"
-    command: ["/bin/sh", "/app/deploy/stage/database_migration/migration.sh"]
+    command: ["make", "migrate"]
     networks:
       - insighter_worker_stage_new
 
@@ -41,7 +41,7 @@ services:
     restart: always
     volumes:
       - redis_cache:/DB/Redis/data/
-    command: ["redis-server", "--port", "${REDIS_PORT}"]
+    command: ["make", "run_redis"]
     networks:
       - insighter_worker_stage_new
 
@@ -71,7 +71,7 @@ services:
     networks:
       - insighter_worker_stage_new
 
-  insighter_worker:
+  insighter_worker_1:
     depends_on:
       - nats
       - rabbitmq_server
@@ -79,13 +79,49 @@ services:
       - postgres_db
       - migration
     image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
-    container_name: insighter_worker
+    container_name: insighter_worker_1
     volumes:
       - worker_volume:/var/lib/worker
     restart: always
     env_file:
       - .env
-    command: ["poetry", "run", "python","/app/src/consumption/runer.py"]
+    command: ["make", "run_worker"]
+    networks:
+      - insighter_worker_stage_new
+
+  insighter_worker_2:
+    depends_on:
+      - nats
+      - rabbitmq_server
+      - redis_cache
+      - postgres_db
+      - migration
+    image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
+    container_name: insighter_worker_2
+    volumes:
+      - worker_volume:/var/lib/worker
+    restart: always
+    env_file:
+      - .env
+    command: ["make", "run_worker"]
+    networks:
+      - insighter_worker_stage_new
+      -
+  insighter_worker_3:
+    depends_on:
+      - nats
+      - rabbitmq_server
+      - redis_cache
+      - postgres_db
+      - migration
+    image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
+    container_name: insighter_worker_3
+    volumes:
+      - worker_volume:/var/lib/worker
+    restart: always
+    env_file:
+      - .env
+    command: ["make", "run_worker"]
     networks:
       - insighter_worker_stage_new
 
@@ -103,7 +139,7 @@ services:
     restart: always
     env_file:
       - .env
-    command: ["poetry", "run", "python","/app/src/api/app/server_app_run.py"]
+    command: ["make", "run_server"]
     ports:
       - "9192:9192"
     networks:
