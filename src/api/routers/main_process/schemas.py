@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class StartFromYouTubeMessage(BaseModel):
+    unique_id: str = Field()
     user_id: int = Field()
     youtube_url: str = Field()
     assistant_id: int = Field()
@@ -20,6 +21,7 @@ class StartFromYouTubeErrorResponse(BaseModel):
 
 
 class StartFromStorageMessage(BaseModel):
+    unique_id: str = Field()
     user_id: int = Field()
     file_path: str = Field()
     assistant_id: int = Field()
@@ -31,6 +33,7 @@ class StartFromStorageMessage(BaseModel):
 
 
 class StartFromS3(BaseModel):
+    unique_id: str = Field()
     user_id: int = Field()
     s3_path: str = Field()
     assistant_id: int = Field()

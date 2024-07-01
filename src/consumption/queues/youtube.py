@@ -17,6 +17,7 @@ async def process_message(message):
 
 async def create_pipeline(query_message, utils):
     pipeline_data = PiplineData(
+        unique_id=query_message.unique_id,
         initiator_user_id=query_message.user_id,
         publisher_queue=query_message.publisher_queue,
         service_source=query_message.source,
@@ -29,7 +30,7 @@ async def create_pipeline(query_message, utils):
         loader=utils.get("commands")['loader']['youtube'],
         transcriber=utils.get("commands")['transcriber']['assembly'],
         summarizer=utils.get("commands")['summarizer']['chat_gpt'],
-        publisher=utils.get("commands")['publisher']['nats'],
+
     )
 
     return pipeline, pipeline_data

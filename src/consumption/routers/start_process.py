@@ -2,8 +2,8 @@ from faststream.rabbit import RabbitRouter, RabbitQueue
 from faststream import Context
 
 from container import components
-from src.consumption.app.queues.s3 import on_message_from_s3
-from src.consumption.app.queues.youtube import on_message_from_youtube_queue
+from src.consumption.queues.s3 import on_message_from_s3
+from src.consumption.queues.youtube import on_message_from_youtube_queue
 
 process_router = RabbitRouter(prefix="")
 

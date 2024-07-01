@@ -1,15 +1,13 @@
-import aio_pika
-from aio_pika.abc import AbstractExchange, DeliveryMode
+
 from faststream.rabbit import RabbitBroker, RabbitQueue, RabbitExchange
 
 from src.api.routers.main_process.schemas import StartFromYouTubeMessage, \
     StartFromS3
 
-from aiormq.abc import AbstractChannel, AbstractConnection
 from fastapi import APIRouter, HTTPException
 from starlette.requests import Request
 
-from container import components, settings
+from container import components
 from src.api.routers.main_process.schemas import StartFromYouTubeMessage, \
     StartFromStorageErrorResponse, StartFromYouTubeErrorResponse
 
@@ -29,7 +27,6 @@ async def start_task_from_storage(message: StartFromS3, request: Request):
         exchange=RabbitExchange(components.rabit_consumers['storage_consumer']['exchanger']['name']))
 
 
-
 @processes_router.post("/start_process_from_youtube")
 async def start_task_from_youtube(message: StartFromYouTubeMessage,
                                   request: Request):
@@ -39,4 +36,3 @@ async def start_task_from_youtube(message: StartFromYouTubeMessage,
         queue=RabbitQueue(name=components.rabit_consumers['youtube_consumer']['queue'],
                           routing_key=components.rabit_consumers['youtube_consumer']['routing_key']),
         exchange=RabbitExchange(components.rabit_consumers['youtube_consumer']['exchanger']['name']))
-
