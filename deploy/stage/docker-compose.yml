@@ -41,7 +41,7 @@ services:
     restart: always
     volumes:
       - redis_cache:/DB/Redis/data/
-    command: ["make", "run_redis"]
+    command: ["redis-server", "--port", "${REDIS_PORT}"]
     networks:
       - insighter_worker_stage_new
 
