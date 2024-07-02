@@ -4,6 +4,7 @@ WORKDIR /app
 
 ENV PYTHONPATH "${PYTHONPATH}:/app"
 
+
 RUN apt-get update && apt-get install -y --no-install-recommends make curl \
     && apt-get install -y ffmpeg  \
     && pip install mutagen \
