@@ -1,13 +1,27 @@
 import asyncio
 from typing import List, BinaryIO, Union
 
-from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
+from assemblyai.api import ENDPOINT_UPLOAD, ENDPOINT_TRANSCRIPT, _get_error_message
 
 from src.consumption.consumers.interface import ITranscriber
+from src.consumption.exeptions.trinscriber_exeptions import TranscriptionError, UnknownTranscriptionError, \
+    APITranscriptionError
+
 from src.file_manager.utils.interface import ICropper
-from src.services.assembly.client import AssemblyClient
+from src.services.assembly.client import AssemblyClient, AsyncAssemblyClient
 from src.services.openai_api_package.whisper_package.whisper import WhisperClient
-from src.utils.wrappers import async_wrap
+
+import contextlib
+import sys
+import aiofiles
+from aiogram.client.session import aiohttp
+from aiohttp import ClientSession, ClientTimeout
+from assemblyai.types import TranscriptRequest, TranscriptResponse, TranscriptionConfig, TranscriptStatus, \
+    TranscriptError
+
+from tenacity import retry, retry_if_exception_type, wait_fixed, stop_after_attempt
+
+from src.utils.data_utils import format_time, from_text
 
 
 class WhisperTranscriber(ITranscriber):
@@ -29,7 +43,7 @@ class WhisperTranscriber(ITranscriber):
         return await self.transcribe(file_path)
 
 
-class AssemblyTranscriber:
+class AssemblyTranscriber(ITranscriber):
 
     def __init__(self, assembly_client: AssemblyClient,
                  language_code='ru',
@@ -53,3 +67,96 @@ class AssemblyTranscriber:
 
     async def __call__(self, file_path: Union[str, BinaryIO]) -> str:
         return await self.transcribe(file_path)
+
+
+class CostumeAssemblyTranscriber:
+    retry_request_timeout = 15.0
+
+    def __init__(self, client: AsyncAssemblyClient, config: TranscriptionConfig = None):
+        self.config = config if config else TranscriptionConfig(language_code="ru", dual_channel=True)
+        self.client = client
+
+    async def do_get_request(self, client: aiohttp.ClientSession, url: str, params=None):
+        if params is None:
+            params = {}
+        async with client.get(url, params=params) as response:
+            return response.status, await response.json()
+
+    async def do_data_post_request(self, client: aiohttp.ClientSession, url: str, data):
+        async with client.post(url, data=data) as response:
+            return response.status, await response.json()
+
+    async def do_json_post_request(self, client: aiohttp.ClientSession, url: str, json):
+        async with client.post(url, json=json) as response:
+            return response.status, await response.json()
+
+    async def async_upload_file(self, client: aiohttp.ClientSession, file_path):
+        async with aiofiles.open(file_path, "rb") as file:
+            data = await file.read()
+            status, response = await self.do_data_post_request(client=client, url=ENDPOINT_UPLOAD, data=data)
+            if status != 200:
+                raise TranscriptError(f"Failed to upload file: {response}")
+            upload_url = response.get("upload_url")
+            return upload_url
+
+    @retry(retry=retry_if_exception_type(TranscriptError), stop=stop_after_attempt(3), wait=wait_fixed(5))
+    async def async_create_transcript(self, client: aiohttp.ClientSession,
+                                      request: TranscriptRequest) -> TranscriptResponse:
+        status, response = await self.do_json_post_request(
+            client=client,
+            url=ENDPOINT_TRANSCRIPT,
+            json=request.dict(exclude_none=True, by_alias=True),
+        )
+
+        if status != 200:
+            raise TranscriptError(
+                f"failed to transcribe url {request.audio_url}: {response.get('error')}"
+            )
+        return TranscriptResponse.parse_obj(response)
+
+    @retry(retry=retry_if_exception_type(TranscriptError), stop=stop_after_attempt(3), wait=wait_fixed(5))
+    async def async_get_transcript(self, client: aiohttp.ClientSession, transcript_id) -> TranscriptResponse:
+        url = f"{ENDPOINT_TRANSCRIPT}/{transcript_id}"
+        status, response = await self.do_get_request(client=client, url=url)
+        if status != 200:
+            raise TranscriptError(
+                f"failed to transcribe by id {transcript_id}: {response.get('error')}"
+            )
+        return TranscriptResponse.parse_obj(response)
+
+    def create_transcript_obj(self, url) -> TranscriptRequest:
+        transcript_request = TranscriptRequest(audio_url=url, **self.config.raw.dict(exclude_none=True))
+        return transcript_request
+
+    @retry(retry=retry_if_exception_type((UnknownTranscriptionError, APITranscriptionError)),
+           stop=stop_after_attempt(3), wait=wait_fixed(5))
+    async def async_wait_for_completion(self, client: aiohttp.ClientSession,
+                                        transcript_response: TranscriptResponse) -> TranscriptResponse:
+        while True:
+            try:
+                transcript: TranscriptResponse = await self.async_get_transcript(client=client,
+                                                                                 transcript_id=transcript_response.id)
+            except Exception as e:
+                raise UnknownTranscriptionError(message=f"Non-API error occurred: {e}", transcriber=self.__class__)
+            else:
+                if transcript.status == transcript.status.error:
+                    raise APITranscriptionError(message="Transcription error occurred", transcriber=self.__class__)
+                elif transcript.status == transcript.status.completed:
+                    return transcript
+            await asyncio.sleep(self.retry_request_timeout)
+
+    async def transcribe(self, file_path: Union[str, BinaryIO]) -> str:
+        async with self.client.create_client() as client:
+            file_url = await self.async_upload_file(client=client, file_path=file_path)
+            transcript_request = self.create_transcript_obj(file_url)
+            transcript: TranscriptResponse = await self.async_create_transcript(client=client,
+                                                                                request=transcript_request)
+            response: TranscriptResponse = await self.async_wait_for_completion(client=client,
+                                                                                transcript_response=transcript)
+            form_text = from_text(response=response)
+            return form_text
+
+    async def __call__(self, file_path: Union[str, BinaryIO]) -> str:
+        return await self.transcribe(file_path)
+
+

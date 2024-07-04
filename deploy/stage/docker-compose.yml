@@ -17,18 +17,18 @@ services:
     networks:
       - insighter_worker_stage_new
 
-  migration:
-    image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
-    container_name: migration_alembic
-    depends_on:
-      - postgres_db
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: "${POSTGRES_URL}"
-    command: ["make", "migrate"]
-    networks:
-      - insighter_worker_stage_new
+#  migration:
+#    image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
+#    container_name: migration_alembic
+#    depends_on:
+#      - postgres_db
+#    env_file:
+#      - .env
+#    environment:
+#      DATABASE_URL: "${POSTGRES_URL}"
+#    command: ["make", "migrate"]
+#    networks:
+#      - insighter_worker_stage_new
 
 
   redis_cache:
