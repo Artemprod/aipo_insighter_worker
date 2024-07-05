@@ -3,10 +3,8 @@ import sys
 
 import assemblyai
 import assemblyai as aai
-from aiogram.client.session import aiohttp
+import aiohttp
 from aiohttp import ClientTimeout, ClientSession
-
-assemblyai.Transcript
 
 
 class AssemblyClient:
@@ -45,5 +43,3 @@ class AsyncAssemblyClient:
             yield session
         finally:
             await session.close()
-
-
