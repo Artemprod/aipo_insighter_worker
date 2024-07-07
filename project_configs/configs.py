@@ -49,8 +49,6 @@ class PostgresDataBaseConfigs(BaseConfig):
     postgres_database: Optional[str]
 
 
-
-
 class RabitMQConfigs(BaseConfig):
     rabitmq_user: Optional[str] = 'guest'
     rabitmq_password: Optional[str] = 'guest'
@@ -77,6 +75,11 @@ class RadisConfigs(BaseConfig):
     redis_port: str = '6379'
 
 
+class SentryConfigs(BaseConfig):
+    sentry_dns_fast_api: str = ''
+    sentry_dns_worker: str = ''
+
+
 class ProjectSettings(BaseConfig):
     language: str = 'ru'
     whisper: WhisperConfigs = Field(default_factory=WhisperConfigs)
@@ -89,7 +92,6 @@ class ProjectSettings(BaseConfig):
     nats_publisher: NATSPublisherConfigs = Field(default_factory=NATSPublisherConfigs)
     redis: RadisConfigs = Field(default_factory=RadisConfigs)
     selectel: SelectelConfigs = Field(default_factory=SelectelConfigs)
+    sentry: SentryConfigs = Field(default_factory=SentryConfigs)
 
 # print(ProjectSettings())
-
-

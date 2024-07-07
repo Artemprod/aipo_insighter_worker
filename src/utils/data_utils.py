@@ -30,3 +30,4 @@ def from_text(response: TranscriptResponse) -> str:
 
             unique_utterance_text.add(utterance.text)
         return text
+
