@@ -3,7 +3,7 @@ from typing import List, BinaryIO, Union
 
 from assemblyai.api import ENDPOINT_UPLOAD, ENDPOINT_TRANSCRIPT
 from src.consumption.consumers.interface import ITranscriber
-from src.consumption.exeptions.trinscriber_exeptions import  UnknownTranscriptionError, \
+from src.consumption.exeptions.trinscriber_exeptions import UnknownTranscriptionError, \
     APITranscriptionError
 
 from src.file_manager.utils.interface import ICropper
@@ -19,6 +19,7 @@ from assemblyai.types import TranscriptRequest, TranscriptResponse, Transcriptio
 from tenacity import retry, retry_if_exception_type, wait_fixed, stop_after_attempt
 
 from src.utils.data_utils import format_time, from_text
+from src.utils.wrappers import async_wrap, async_timing_decorator
 
 
 class WhisperTranscriber(ITranscriber):
@@ -66,7 +67,7 @@ class AssemblyTranscriber(ITranscriber):
         return await self.transcribe(file_path)
 
 
-class CostumeAssemblyTranscriber:
+class CostumeAssemblyTranscriber(ITranscriber):
     retry_request_timeout = 3.0  # Уменьшил время задержки между запросами
 
     def __init__(self, client: AsyncAssemblyClient, config: TranscriptionConfig = None):
@@ -142,5 +143,18 @@ class CostumeAssemblyTranscriber:
         return await self.transcribe(file_path)
 
 
+class AsyncWrappedAssemblyTranscriber(ITranscriber):
+
+    def __init__(self, client: AssemblyClient, config: TranscriptionConfig = None):
+        self.config = config or TranscriptionConfig(language_code="ru", dual_channel=True)
+        self.client = client
+
+    @async_wrap
+    def transcribe(self, file_path: Union[str, BinaryIO]):
+        transcript = self.client.Transcriber().transcribe(file_path, self.config)
+        return from_text(response=transcript)
+
+    async def __call__(self, file_path: Union[str, BinaryIO]) -> str:
+        return await self.transcribe(file_path)
 
 

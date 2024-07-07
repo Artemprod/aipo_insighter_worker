@@ -1,4 +1,6 @@
 # __run fast api application __
+import sentry_sdk
+
 from container import components, settings
 from src.api.app.initialize.server_creator import create_server
 import uvicorn
