@@ -1,15 +1,18 @@
 from typing import Any, Dict
+
+from assemblyai import TranscriptionConfig
 from fastapi_cache.backends.redis import RedisBackend
 from project_configs.configs import ProjectSettings
-from src.consumption.app.connector import RabbitMQConnector
+
 from src.consumption.consumers.summarizer import DocumentSummarizer, GptSummarizer
-from src.consumption.consumers.transcriber import WhisperTranscriber, AssemblyTranscriber
+from src.consumption.consumers.transcriber import WhisperTranscriber, AssemblyTranscriber, CostumeAssemblyTranscriber, \
+    AsyncWrappedAssemblyTranscriber
 from src.database.engine.session_maker import DatabaseSessionManager
 from src.database.repositories.storage_container import Repositories
 from src.file_manager.s3.s3_file_loader import S3FileLoader
 from src.file_manager.utils.media_file_cropper import AsyncCropper
 from src.file_manager.youtube.youtube_file_loader import YouTubeFileLoader
-from src.services.assembly.client import AssemblyClient
+from src.services.assembly.client import AssemblyClient, AsyncAssemblyClient
 from src.services.openai_api_package.chat_gpt_package.client import GPTClient
 from src.services.openai_api_package.chat_gpt_package.model import GPTOptions
 from src.services.openai_api_package.whisper_package.whisper import WhisperClient
@@ -61,6 +64,18 @@ def initialize_assembly_transcriber(settings: ProjectSettings):
                                speaker_labels=settings.assembly.speaker_label)
 
 
+def initialize_async_assembly_transcriber(settings: ProjectSettings):
+    client = AsyncAssemblyClient(api_key=settings.assembly.assembly_api_key)
+    config = TranscriptionConfig(language_code=settings.language, dual_channel=settings.assembly.speaker_label)
+    return CostumeAssemblyTranscriber(client=client, config=config)
+
+
+def initialize_async_wraped_assembly_transcriber(settings: ProjectSettings):
+    client = AssemblyClient(api_key=settings.assembly.assembly_api_key)
+    config = TranscriptionConfig(language_code=settings.language, dual_channel=settings.assembly.speaker_label)
+    return AsyncWrappedAssemblyTranscriber(client=client, config=config)
+
+
 def initialize_whisper_client(settings: ProjectSettings):
     return WhisperClient(api_key=settings.openai.openai_api_key, configs=settings.whisper)
 
@@ -99,9 +114,6 @@ def initialize_s3_loader():
     return S3FileLoader()
 
 
-
-
-
 def initialize_redis(settings: ProjectSettings):
     redis = aioredis.from_url(settings.redis.redis_server_url)
     return RedisBackend(redis)
@@ -114,13 +126,14 @@ def rabit_exchangers():
 def rabit_consumers():
     return resolved_settings['consumers']
 
+
 def get_components(settings: ProjectSettings) -> SystemComponents:
     return SystemComponents(
         repositories_com=initialize_repositories_com(settings),
         whisper_client=initialize_whisper_client(settings),
         gpt_client=initialize_gpt_client(settings),
         assembly_client=initialize_assembly_client(settings),
-        assembly_transcriber=initialize_assembly_transcriber(settings),
+        assembly_transcriber=initialize_async_wraped_assembly_transcriber(settings),
         whisper_transcriber=initialize_whisper_transcriber(settings),
         lang_chain_summarization=initialize_lang_chain_summarization(settings),
         gpt_summarizer=initialize_gpt_summarizer(settings),
@@ -148,27 +161,13 @@ def create_commands(system_components: SystemComponents) -> Dict[str, Dict[str, 
             'langchain': system_components.lang_chain_summarization
         },
 
-
     }
     return commands_container
 
 
-def create_listener(settings, components, commands):
-    connector = RabbitMQConnector(
-        username=settings.rabbitmq.rabitmq_user,
-        password=settings.rabbitmq.rabitmq_password,
-        port=settings.rabbitmq.rabitmq_port,
-        rabbit_host=settings.rabbitmq.rabitmq_host
-    )
-    connector.utils.commands = commands
-    connector.utils.database_repository = components.repositories_com
-    return connector
+
 
 
 settings = ProjectSettings()
 components = get_components(settings=settings)
 commands = create_commands(components)
-listener = create_listener(settings=settings,
-                           components=components,
-                           commands=commands,
-                           )

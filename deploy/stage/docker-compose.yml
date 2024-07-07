@@ -17,18 +17,18 @@ services:
     networks:
       - insighter_worker_stage_new
 
-  migration:
-    image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
-    container_name: migration_alembic
-    depends_on:
-      - postgres_db
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: "${POSTGRES_URL}"
-    command: ["make", "migrate"]
-    networks:
-      - insighter_worker_stage_new
+#  migration:
+#    image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
+#    container_name: migration_alembic
+#    depends_on:
+#      - postgres_db
+#    env_file:
+#      - .env
+#    environment:
+#      DATABASE_URL: "${POSTGRES_URL}"
+#    command: ["make", "migrate"]
+#    networks:
+#      - insighter_worker_stage_new
 
 
   redis_cache:
@@ -41,7 +41,7 @@ services:
     restart: always
     volumes:
       - redis_cache:/DB/Redis/data/
-    command: ["make", "run_redis"]
+    command: ["redis-server", "--port", "${REDIS_PORT}"]
     networks:
       - insighter_worker_stage_new
 
@@ -77,7 +77,7 @@ services:
       - rabbitmq_server
       - redis_cache
       - postgres_db
-      - migration
+
     image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
     container_name: insighter_worker_1
     volumes:
@@ -95,7 +95,7 @@ services:
       - rabbitmq_server
       - redis_cache
       - postgres_db
-      - migration
+
     image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
     container_name: insighter_worker_2
     volumes:
@@ -114,7 +114,7 @@ services:
       - rabbitmq_server
       - redis_cache
       - postgres_db
-      - migration
+
     image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
     container_name: insighter_worker_3
     volumes:
@@ -132,7 +132,7 @@ services:
       - rabbitmq_server
       - redis_cache
       - postgres_db
-      - migration
+
     container_name: insighter_api_server
     image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
     volumes:
