@@ -1,6 +1,6 @@
 import asyncio
 import json
-
+from loguru import logger
 from faststream.rabbit import RabbitRouter, RabbitQueue, RabbitMessage
 from faststream import Context
 
@@ -11,16 +11,18 @@ from src.consumption.queues.youtube import on_message_from_youtube_queue
 process_router = RabbitRouter(prefix="")
 
 
-async def handle_task_result(task, msg):
+async def handle_task_result(task, msg: RabbitMessage):
     try:
         exception = task.exception()
         if exception:
-            await msg.nack(
-                requeue=True)  # Сообщаем, что сообщение не было обработано и нужно повторно добавить в очередь
-        else:
-            await msg.nack(requeue=True)
+            logger.error(f"Ошибка обработки асинхронной задачи: {exception}")
+            await msg.nack(requeue=True)  # Сообщаем, что сообщение не было обработано и нужно повторно добавить в очередь
             raise exception
+        else:
+            logger.info(f"Сообщение обработано успешно: {msg}")
+            await msg.ack()  # Подтверждаем успешную обработку сообщения
     except Exception as e:
+        logger.error(f"Ошибка при обработке сообщения: {e}")
         await msg.nack(requeue=True)
         raise e
 
