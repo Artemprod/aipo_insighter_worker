@@ -18,10 +18,10 @@ async def handle_task_result(task, msg):
             await msg.nack(
                 requeue=True)  # Сообщаем, что сообщение не было обработано и нужно повторно добавить в очередь
         else:
-            msg.nack(requeue=True)
+            await msg.nack(requeue=True)
             raise exception
     except Exception as e:
-        msg.nack(requeue=True)
+        await msg.nack(requeue=True)
         raise e
 
 
