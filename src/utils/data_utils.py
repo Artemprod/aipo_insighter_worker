@@ -5,7 +5,7 @@ def format_time(milliseconds: int) -> str:
     seconds, milliseconds = divmod(milliseconds, 1000)
     minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
-    return f"{hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}"
+    return f"{hours:02}:{minutes:02}:{seconds:02}"
 
 
 def remove_duplicates(transcription):
