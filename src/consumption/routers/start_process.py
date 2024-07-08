@@ -28,7 +28,7 @@ async def handle_task_result(task, msg):
                                              routing_key=components.rabit_consumers['youtube_consumer']['routing_key']),
                            exchange=components.rabit_consumers['youtube_consumer']['exchanger']['name'])
 async def handle_youtube_response(msg: RabbitMessage, context=Context()):
-    task = asyncio.create_task(on_message_from_youtube_queue(message=msg.body, utils=context.utils))
+    task = asyncio.create_task(on_message_from_youtube_queue(message=msg.body.decode("utf-8"), utils=context.utils))
     task.add_done_callback(lambda t: asyncio.create_task(handle_task_result(t, msg)))
 
 
@@ -36,5 +36,5 @@ async def handle_youtube_response(msg: RabbitMessage, context=Context()):
                                              routing_key=components.rabit_consumers['storage_consumer']['routing_key']),
                            exchange=components.rabit_consumers['storage_consumer']['exchanger']['name'])
 async def handle_s3_response(msg: RabbitMessage, context=Context()):
-    task = asyncio.create_task(on_message_from_s3(message=msg.body, utils=context.utils))
+    task = asyncio.create_task(on_message_from_s3(message=msg.body.decode("utf-8"), utils=context.utils))
     task.add_done_callback(lambda t: asyncio.create_task(handle_task_result(t, msg)))
