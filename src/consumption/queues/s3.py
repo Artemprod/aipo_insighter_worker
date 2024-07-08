@@ -12,6 +12,7 @@ from src.pipelines.models import PiplineData
 async def process_message(message):
     logger.info(f"Received message: {message}")
     query_message = StartFromS3(**message)
+    logger.info(f"собрал s3 сообщения для обработки {query_message}")
     return query_message
 
 
@@ -32,7 +33,8 @@ async def create_pipeline(query_message, utils):
         summarizer=utils.get("commands")['summarizer']['chat_gpt'],
 
     )
-
+    logger.info(f"s3 Пайплайн данные {pipeline_data} собраны")
+    logger.info(f"s3 Пайплайн {pipeline} собран")
     return pipeline, pipeline_data
 
 
