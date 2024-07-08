@@ -25,8 +25,8 @@ def from_text(response: TranscriptResponse) -> str:
         text = ""
         for utterance in response.utterances:
             if utterance.text not in unique_utterance_text:
-                text += (f"Спикер {utterance.speaker}: {utterance.text}\n"
-                         f"{format_time(utterance.start)}, {format_time(utterance.end)}\n\n")
+                text += (f"Спикер {utterance.speaker} | {format_time(utterance.start)}, {format_time(utterance.end)}\n"
+                         f"{utterance.text}\n\n")
 
             unique_utterance_text.add(utterance.text)
         return text
