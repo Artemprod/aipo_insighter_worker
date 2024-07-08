@@ -32,7 +32,7 @@ async def handle_task_result(task, msg: RabbitMessage):
                            exchange=components.rabit_consumers['youtube_consumer']['exchanger']['name'])
 async def handle_youtube_response(msg: RabbitMessage, context=Context()):
     task = asyncio.create_task(on_message_from_youtube_queue(message= json.loads(msg.body.decode("utf-8")), utils=context.utils))
-    task.add_done_callback(lambda t: asyncio.create_task(handle_task_result(t, msg)))
+    task.add_done_callback(lambda t:handle_task_result(t, msg))
 
 
 @process_router.subscriber(queue=RabbitQueue(name=components.rabit_consumers['storage_consumer']['queue'],
@@ -40,4 +40,4 @@ async def handle_youtube_response(msg: RabbitMessage, context=Context()):
                            exchange=components.rabit_consumers['storage_consumer']['exchanger']['name'])
 async def handle_s3_response(msg: RabbitMessage, context=Context()):
     task = asyncio.create_task(on_message_from_s3(message=json.loads(msg.body.decode("utf-8")), utils=context.utils))
-    task.add_done_callback(lambda t: asyncio.create_task(handle_task_result(t, msg)))
+    task.add_done_callback(lambda t: handle_task_result(t, msg))
