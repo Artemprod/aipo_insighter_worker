@@ -34,7 +34,7 @@ class Pipeline(ABC):
 
 
 
-    async def run(self, pipeline_data: PiplineData) -> str | None:
+    async def run(self, pipeline_data: PiplineData) -> int | None:
 
         file_name = parse_path(path=pipeline_data.file_destination)
         temp_file_path = create_temp_path(file_name=file_name,
@@ -61,7 +61,7 @@ class Pipeline(ABC):
         if temp_file_path:
             clear_temp_dir(temp_file_path)
 
-        return summary
+        return 1
 
     async def save_transcribed_text(self, transcribed_text: str, pipeline_data: PiplineData):
         return await self.repo.transcribed_text_repository.save(
