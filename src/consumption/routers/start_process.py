@@ -19,6 +19,7 @@ process_router = RabbitRouter(prefix="")
 async def handle_youtube_response(msg: RabbitMessage, context=Context()):
     task = asyncio.create_task(on_message_from_youtube_queue(message= json.loads(msg.body.decode("utf-8")), utils=context.utils))
     task.add_done_callback(lambda t: t.exception() if t.exception() else None)
+    await asyncio.sleep(15)
     await msg.ack()
 
 
@@ -28,4 +29,6 @@ async def handle_youtube_response(msg: RabbitMessage, context=Context()):
 async def handle_s3_response(msg: RabbitMessage, context=Context()):
     task = asyncio.create_task(on_message_from_s3(message=json.loads(msg.body.decode("utf-8")), utils=context.utils))
     task.add_done_callback(lambda t: t.exception() if t.exception() else None)
+    await asyncio.sleep(15)
     await msg.ack()
+
