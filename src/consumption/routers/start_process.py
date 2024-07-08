@@ -17,7 +17,7 @@ async def handle_task_result(task, msg: RabbitMessage):
         if exception:
             logger.error(f"Ошибка обработки асинхронной задачи: {exception}")
             await msg.nack(requeue=True)  # Сообщаем, что сообщение не было обработано и нужно повторно добавить в очередь
-            raise exception
+            raise Exception(exception)
         else:
             logger.info(f"Сообщение обработано успешно: {msg}")
             await msg.ack()  # Подтверждаем успешную обработку сообщения
