@@ -17,9 +17,11 @@ async def handle_task_result(task, msg):
             await msg.nack(
                 requeue=True)  # Сообщаем, что сообщение не было обработано и нужно повторно добавить в очередь
         else:
-            await msg.ack()  # Подтверждаем успешную обработку сообщения
+            msg.nack(requeue=True)
+            raise exception
     except Exception as e:
-        await msg.nack(requeue=True)
+        msg.nack(requeue=True)
+        raise e
 
 
 @process_router.subscriber(queue=RabbitQueue(name=components.rabit_consumers['youtube_consumer']['queue'],
