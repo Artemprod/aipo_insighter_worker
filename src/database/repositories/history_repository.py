@@ -49,7 +49,7 @@ class HistoryRepository(BaseRepository):
         async with self.db_session_manager.session_scope() as session:
             query = select(HistoryModel).filter(HistoryModel.user_id==user_id)
             result = await session.execute(query)
-            record = result.scalar()
+            record = result.fetchall()
             return record is not None
 
     async def get_history_by_user_id(self, user_id: int) -> list[HistoryResultDTO] | None:
