@@ -45,6 +45,7 @@ async def get_user_history_by_date(user_id: int, date, request: Request):
 @history_router.get("/check_history")
 @cache(expire=60 * 10)
 async def get_user_history_by_date(user_id: int, request: Request):
+
     logger.info("user_id", user_id)
     try:
         is_history = await request.app.repositories.history_repository.check_history(user_id=user_id)
