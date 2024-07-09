@@ -35,6 +35,7 @@ class Pipeline(ABC):
 
 
     async def run(self, pipeline_data: PiplineData) -> int | None:
+        logger.info(f"Пайплайн запустился")
 
         file_name = parse_path(path=pipeline_data.file_destination)
         temp_file_path = create_temp_path(file_name=file_name,
@@ -44,7 +45,7 @@ class Pipeline(ABC):
         if not transcribed_text:
             logger.info("Нету транскрибированного текста")
             return None
-
+        logger.info(f"получен транскриби рованый текст для пользвоателя {pipeline_data.initiator_user_id}")
         text_model = await self.save_transcribed_text(transcribed_text, pipeline_data)
         await self.publish_transcribed_text(text_model, pipeline_data)
 
@@ -60,6 +61,7 @@ class Pipeline(ABC):
 
         if temp_file_path:
             clear_temp_dir(temp_file_path)
+            logger.info(f"очистил времмную папку {temp_file_path}")
 
         return 1
 
@@ -71,6 +73,8 @@ class Pipeline(ABC):
             transcription_date=datetime.now(),
             transcription_time=datetime.now()
         )
+
+    logger.info(f"сохранил транскрибированый текст")
 
     @staticmethod
     async def publish_transcribed_text(text_model, pipeline_data: PiplineData):
@@ -105,5 +109,7 @@ class Pipeline(ABC):
             service_source=pipeline_data.service_source,
             summary_date=datetime.now()
         )
+
+    logger.info(f"сохранил саммари текст")
 
 
