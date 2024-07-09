@@ -41,6 +41,7 @@ class Pipeline(ABC):
         if not transcribed_text:
             logger.info("Нету транскрибированного текста")
             return None
+
         logger.info(f"получен транскриби рованый текст для пользвоателя {pipeline_data.initiator_user_id}")
         text_model = await self.save_transcribed_text(transcribed_text, pipeline_data)
         await self.publish_transcribed_text(text_model, pipeline_data)
@@ -54,18 +55,19 @@ class Pipeline(ABC):
 
         summary_text_model = await self.save_summary_text(summary, text_model.id, pipeline_data)
         await self.publish_summary_text(summary_text_model, pipeline_data)
-
+        await self.save_new_history(transcribe_id=int(text_model.id),
+                                    summary_id=int(summary_text_model),
+                                    pipeline_data=pipeline_data)
         if temp_file_path:
             clear_temp_dir(temp_file_path)
             logger.info(f"очистил времмную папку {temp_file_path}")
 
-        await self.save_new_history(transcribe_id=int(text_model.id),
-                                    summary_id=int(summary_text_model),
-                                    pipeline_data=pipeline_data)
+
 
         return 1
 
     async def save_transcribed_text(self, transcribed_text: str, pipeline_data: PiplineData):
+        logger.info(f"сохранил транскрибированый текст")
         return await self.repo.transcribed_text_repository.save(
             text=transcribed_text,
             user_id=pipeline_data.initiator_user_id,
@@ -74,7 +76,7 @@ class Pipeline(ABC):
             transcription_time=datetime.now()
         )
 
-    logger.info(f"сохранил транскрибированый текст")
+
 
     async def save_new_history(self, transcribe_id, summary_id, pipeline_data: PiplineData):
         logger.info(f"сохраняю новую историю")
