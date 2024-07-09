@@ -12,8 +12,8 @@ from src.database.repositories.base_repository import BaseRepository
 
 class HistoryRepository(BaseRepository):
 
-    async def add_history(self, user_id: int, unique_id: str, service_source: str, summary_id: Optional[int] = None,
-                          transcribe_id: Optional[int] = None) -> HistoryDTO:
+    async def add_history(self, user_id: int, unique_id: str, service_source: str, summary_id: int,
+                          transcribe_id: int) -> HistoryDTO:
         async with self.db_session_manager.session_scope() as session:
             event = HistoryModel(
                 user_id=user_id,
