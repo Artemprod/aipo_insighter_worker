@@ -24,7 +24,7 @@ class HistoryModel(ModelBase):
             'user_id': self.user_id,
             'unique_id': self.unique_id,
             'summary_id': self.summary_id,
-            'transcribe_id': self.transccribe_id,
+            'transcribe_id': self.transcribe_id,
             'date': self.date,
 
         }

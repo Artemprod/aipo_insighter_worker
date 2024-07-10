@@ -12,8 +12,8 @@ class TranscribedTexts(ModelBase):
     text = Column(Text, nullable=False)
     user_id = Column(BigInteger, nullable=False)
     service_source = Column(Text, nullable=True)
-    transcription_date = Column(TIMESTAMP, nullable=False)
-    transcription_time = Column(TIMESTAMP, nullable=False)
+    transcription_date = Column(TIMESTAMP, nullable=True)
+    transcription_time = Column(TIMESTAMP, nullable=True)
 
     def to_dict(self):
         return {

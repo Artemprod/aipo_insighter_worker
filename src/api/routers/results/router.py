@@ -34,6 +34,7 @@ async def get_summary_text_from_database(id_text: int,
                                          request: Request):
     try:
         text: SummaryText = await request.app.repositories.summary_text_repository.get(text_id=id_text)
+        print(text)
         if text is not None:
             return asdict(text)
         else:

@@ -53,17 +53,19 @@ class Pipeline(ABC):
             logger.info("Нету саммари")
             return None
 
-        summary_text_model = await self.save_summary_text(summary, text_model.id, pipeline_data)
+        summary_text_model = await self.save_summary_text(summary=summary, pipeline_data=pipeline_data)
         await self.publish_summary_text(summary_text_model, pipeline_data)
-        await self.save_new_history(transcribe_id=int(text_model.id),
-                                    summary_id=int(summary_text_model),
-                                    pipeline_data=pipeline_data)
+
+        h = await self.save_new_history(transcribe_id=int(text_model.id),
+                                        summary_id=int(summary_text_model.id),
+                                        pipeline_data=pipeline_data)
+
         if temp_file_path:
             clear_temp_dir(temp_file_path)
             logger.info(f"очистил времмную папку {temp_file_path}")
 
-
-
+        print(h)
+        print(int(text_model.id), int(summary_text_model), )
         return 1
 
     async def save_transcribed_text(self, transcribed_text: str, pipeline_data: PiplineData):
@@ -76,17 +78,17 @@ class Pipeline(ABC):
             transcription_time=datetime.now()
         )
 
-
-
-    async def save_new_history(self, transcribe_id, summary_id, pipeline_data: PiplineData):
+    async def save_new_history(self, transcribe_id: int, summary_id: int, pipeline_data: PiplineData):
         logger.info(f"сохраняю новую историю")
-        return await self.repo.history_repository.add_history(
-            user_id=pipeline_data.initiator_user_id,
-            unique_id=pipeline_data.unique_id,
-            service_source=pipeline_data.service_source,
-            summary_id=summary_id,
-            transcribe_id=transcribe_id)
-
+        try:
+            return await self.repo.history_repository.add_history(
+                user_id=int(pipeline_data.initiator_user_id),
+                unique_id=str(pipeline_data.unique_id),
+                service_source=str(pipeline_data.service_source),
+                summary_id=summary_id,
+                transcribe_id=transcribe_id)
+        except Exception as e:
+            print(e)
 
     @staticmethod
     async def publish_transcribed_text(text_model, pipeline_data: PiplineData):
@@ -113,14 +115,11 @@ class Pipeline(ABC):
             )
             logger.info("Отправил саммари")
 
-    async def save_summary_text(self, summary: str, transcribed_text_id: str, pipeline_data: PiplineData):
+    async def save_summary_text(self, summary: str, pipeline_data: PiplineData):
         logger.info(f"сохраняю текст")
         return await self.repo.summary_text_repository.save(
             text=summary,
-            transcribed_text_id=transcribed_text_id,
             user_id=pipeline_data.initiator_user_id,
             service_source=pipeline_data.service_source,
             summary_date=datetime.now()
         )
-
-
