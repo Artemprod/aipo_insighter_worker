@@ -33,6 +33,7 @@ async def get_user_history_by_date(user_id: int, date, request: Request):
     try:
         history: list[HistoryResultDTO] = await request.app.repositories.history_repository.get_history_by_date(
             user_id=user_id, date=date)
+        logger.info(f"Проверка истории в API {history}")
         if history is not None:
             result = [i.to_dict() for i in history]
             return result
