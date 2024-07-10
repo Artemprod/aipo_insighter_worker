@@ -12,8 +12,9 @@ from src.database.repositories.base_repository import BaseRepository
 
 class HistoryRepository(BaseRepository):
 
-    async def add_history(self, user_id: int, unique_id: str, service_source: str, summary_id: Optional[int] = None,
-                          transcribe_id: Optional[int] = None) -> HistoryDTO:
+    async def add_history(self, user_id: int, unique_id: str, service_source: str, summary_id: int,
+                          transcribe_id: int) -> HistoryDTO:
+
         async with self.db_session_manager.session_scope() as session:
             event = HistoryModel(
                 user_id=user_id,
@@ -49,14 +50,14 @@ class HistoryRepository(BaseRepository):
         async with self.db_session_manager.session_scope() as session:
             query = select(HistoryModel).filter(HistoryModel.user_id==user_id)
             result = await session.execute(query)
-            record = result.scalar()
-            return record is not None
+            record = result.scalars().all()
+            return len(record) > 0
 
     async def get_history_by_user_id(self, user_id: int) -> list[HistoryResultDTO] | None:
         async with self.db_session_manager.session_scope() as session:
             query = select(HistoryModel, SummaryTexts, TranscribedTexts).select_from(HistoryModel). \
                 join(SummaryTexts, HistoryModel.summary_id == SummaryTexts.id). \
-                join(TranscribedTexts, HistoryModel.summary_id == TranscribedTexts.id). \
+                join(TranscribedTexts, HistoryModel.transcribe_id == TranscribedTexts.id). \
                 filter(HistoryModel.user_id == user_id)
 
             result = await session.execute(query)
@@ -78,7 +79,6 @@ class HistoryRepository(BaseRepository):
                     date=history_model.date
                 )
                 history_results.append(history_result)
-
             return history_results
 
     async def get_history_by_date(self, user_id: int, date:str) -> list[HistoryResultDTO] | None:

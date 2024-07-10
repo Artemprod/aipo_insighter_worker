@@ -9,3 +9,4 @@ class PiplineData:
     service_source: str
     assistant_id: int
     file_destination: str
+

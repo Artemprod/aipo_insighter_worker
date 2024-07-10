@@ -16,78 +16,79 @@ from src.utils.path_opertaions import parse_path, create_temp_path, clear_temp_d
 
 
 class Pipeline(ABC):
+    temp_history_date = {}
 
     def __init__(self,
                  repo: Repositories,
                  loader: IBaseFileLoader,
                  transcriber: ITranscriber,
-                 summarizer: ISummarizer):
+                 summarizer: ISummarizer,
+                 ):
+
         self.repo = repo
         self.loader = loader
         self.transcriber = transcriber
         self.summarizer = summarizer
 
     async def run(self, pipeline_data: PiplineData) -> int | None:
-        logger.info("Pipeline started")
+        logger.info(f"Пайплайн запустился")
 
         file_name = parse_path(path=pipeline_data.file_destination)
-        temp_file_path = create_temp_path(file_name=file_name, user_id=pipeline_data.initiator_user_id)
+        temp_file_path = create_temp_path(file_name=file_name,
+                                          user_id=pipeline_data.initiator_user_id)
         file = await self.loader(pipeline_data.file_destination, temp_file_path)
         transcribed_text = await self.transcriber(file)
         if not transcribed_text:
-            logger.info("No transcribed text")
+            logger.info("Нету транскрибированного текста")
             return None
 
-        logger.info(f"Transcribed text received for user {pipeline_data.initiator_user_id}")
+        logger.info(f"получен транскриби рованый текст для пользвоателя {pipeline_data.initiator_user_id}")
         text_model = await self.save_transcribed_text(transcribed_text, pipeline_data)
         await self.publish_transcribed_text(text_model, pipeline_data)
-        await self.save_new_history(transcribe_id=text_model.id, pipeline_data=pipeline_data)
 
         assistant = await self.repo.assistant_repository.get(assistant_id=pipeline_data.assistant_id)
         summary = await self.summarizer(transcribed_text=transcribed_text, assistant=assistant)
+
         if not summary:
-            logger.info("No summary")
+            logger.info("Нету саммари")
             return None
 
-        summary_text_model = await self.save_summary_text(summary, text_model.id, pipeline_data)
+        summary_text_model = await self.save_summary_text(summary=summary, pipeline_data=pipeline_data)
         await self.publish_summary_text(summary_text_model, pipeline_data)
-        await self.update_summary_history(summary_id=summary_text_model.id, pipeline_data=pipeline_data)
+
+        h = await self.save_new_history(transcribe_id=int(text_model.id),
+                                        summary_id=int(summary_text_model.id),
+                                        pipeline_data=pipeline_data)
 
         if temp_file_path:
             clear_temp_dir(temp_file_path)
-            logger.info(f"Cleared temporary directory {temp_file_path}")
+            logger.info(f"очистил времмную папку {temp_file_path}")
 
+        print(h)
+        print(int(text_model.id), int(summary_text_model), )
         return 1
 
     async def save_transcribed_text(self, transcribed_text: str, pipeline_data: PiplineData):
-        result = await self.repo.transcribed_text_repository.save(
+        logger.info(f"сохранил транскрибированый текст")
+        return await self.repo.transcribed_text_repository.save(
             text=transcribed_text,
             user_id=pipeline_data.initiator_user_id,
             service_source=pipeline_data.service_source,
             transcription_date=datetime.now(),
             transcription_time=datetime.now()
         )
-        logger.info("Saved transcribed text")
-        return result
 
-    async def save_new_history(self, transcribe_id: int, pipeline_data: PiplineData):
-        result = await self.repo.history_repository.add_history(
-            user_id=pipeline_data.initiator_user_id,
-            unique_id=pipeline_data.unique_id,
-            service_source=pipeline_data.service_source,
-            transcribe_id=transcribe_id,
-        )
-        logger.info("Saved new history")
-        return result
-
-    async def update_summary_history(self, summary_id: int, pipeline_data: PiplineData):
-        result = await self.repo.history_repository.update_history(
-            user_id=pipeline_data.initiator_user_id,
-            unique_id=pipeline_data.unique_id,
-            summary_id=summary_id
-        )
-        logger.info("Updated history with summary")
-        return result
+    async def save_new_history(self, transcribe_id: int, summary_id: int, pipeline_data: PiplineData):
+        logger.info(f"сохраняю новую историю")
+        try:
+            return await self.repo.history_repository.add_history(
+                user_id=int(pipeline_data.initiator_user_id),
+                unique_id=str(pipeline_data.unique_id),
+                service_source=str(pipeline_data.service_source),
+                summary_id=summary_id,
+                transcribe_id=transcribe_id)
+        except Exception as e:
+            print(e)
 
     @staticmethod
     async def publish_transcribed_text(text_model, pipeline_data: PiplineData):
@@ -99,7 +100,7 @@ class Pipeline(ABC):
                                        user_id=int(pipeline_data.initiator_user_id)),
                 subject=f"{pipeline_data.publisher_queue}.transcribe",
             )
-            logger.info("Published transcribed text")
+            logger.info("Отправил транскрибацию")
 
     @staticmethod
     async def publish_summary_text(summary_text_model, pipeline_data: PiplineData):
@@ -110,16 +111,15 @@ class Pipeline(ABC):
                                        tex_id=int(summary_text_model.id),
                                        user_id=int(pipeline_data.initiator_user_id)),
                 subject=f"{pipeline_data.publisher_queue}.summary",
-            )
-            logger.info("Published summary")
 
-    async def save_summary_text(self, summary: str, transcribed_text_id: str, pipeline_data: PiplineData):
-        result = await self.repo.summary_text_repository.save(
+            )
+            logger.info("Отправил саммари")
+
+    async def save_summary_text(self, summary: str, pipeline_data: PiplineData):
+        logger.info(f"сохраняю текст")
+        return await self.repo.summary_text_repository.save(
             text=summary,
-            transcribed_text_id=transcribed_text_id,
             user_id=pipeline_data.initiator_user_id,
             service_source=pipeline_data.service_source,
             summary_date=datetime.now()
         )
-        logger.info("Saved summary text")
-        return result
