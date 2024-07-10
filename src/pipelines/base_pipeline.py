@@ -56,7 +56,7 @@ class Pipeline(ABC):
         summary_text_model = await self.save_summary_text(summary=summary, pipeline_data=pipeline_data)
         await self.publish_summary_text(summary_text_model, pipeline_data)
 
-        h = await self.save_new_history(transcribe_id=int(text_model.id),
+        await self.save_new_history(transcribe_id=int(text_model.id),
                                         summary_id=int(summary_text_model.id),
                                         pipeline_data=pipeline_data)
 
@@ -64,8 +64,7 @@ class Pipeline(ABC):
             clear_temp_dir(temp_file_path)
             logger.info(f"очистил времмную папку {temp_file_path}")
 
-        print(h)
-        print(int(text_model.id), int(summary_text_model), )
+
         return 1
 
     async def save_transcribed_text(self, transcribed_text: str, pipeline_data: PiplineData):
