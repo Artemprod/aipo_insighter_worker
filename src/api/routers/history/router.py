@@ -11,7 +11,6 @@ history_router = APIRouter(
 
 
 @history_router.get("/get_history")
-@cache(expire=60 * 10)
 async def get_user_history(user_id: int, request: Request):
     logger.info("user_id", user_id)
     try:
