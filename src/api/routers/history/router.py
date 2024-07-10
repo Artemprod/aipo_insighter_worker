@@ -26,7 +26,6 @@ async def get_user_history(user_id: int, request: Request):
 
 
 @history_router.get("/get_history_by_date")
-@cache(expire=60 * 10)
 async def get_user_history_by_date(user_id: int, date, request: Request):
     logger.info("user_id", user_id)
     try:
@@ -43,7 +42,6 @@ async def get_user_history_by_date(user_id: int, date, request: Request):
 
 
 @history_router.get("/check_history")
-@cache(expire=60 * 10)
 async def get_user_history_by_date(user_id: int, request: Request):
     logger.info("user_id", user_id)
     try:
