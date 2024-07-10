@@ -1,5 +1,7 @@
 import datetime
 from typing import Optional, List
+
+from loguru import logger
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -51,6 +53,7 @@ class HistoryRepository(BaseRepository):
             query = select(HistoryModel).filter(HistoryModel.user_id==user_id)
             result = await session.execute(query)
             record = result.scalars().all()
+            logger.info(f"Проверка ответа истории {len(record) > 0}")
             return len(record) > 0
 
     async def get_history_by_user_id(self, user_id: int) -> list[HistoryResultDTO] | None:

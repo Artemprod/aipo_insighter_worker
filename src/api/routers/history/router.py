@@ -48,7 +48,7 @@ async def get_user_history_by_date(user_id: int, request: Request):
     logger.info("user_id", user_id)
     try:
         is_history = await request.app.repositories.history_repository.check_history(user_id=user_id)
-        print(is_history)
-        return {"is_history":is_history}
+        logger.info(f"Проверка ответа истории в API {is_history}")
+        return {"is_history": is_history}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
