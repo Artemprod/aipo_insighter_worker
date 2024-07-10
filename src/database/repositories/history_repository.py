@@ -16,7 +16,6 @@ class HistoryRepository(BaseRepository):
 
     async def add_history(self, user_id: int, unique_id: str, service_source: str, summary_id: int,
                           transcribe_id: int) -> HistoryDTO:
-
         async with self.db_session_manager.session_scope() as session:
             event = HistoryModel(
                 user_id=user_id,
@@ -55,6 +54,7 @@ class HistoryRepository(BaseRepository):
             record = result.scalars().all()
             logger.info(f"Проверка ответа истории {len(record) > 0}")
             return len(record) > 0
+
 
     async def get_history_by_user_id(self, user_id: int) -> list[HistoryResultDTO] | None:
         async with self.db_session_manager.session_scope() as session:
