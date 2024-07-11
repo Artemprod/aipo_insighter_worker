@@ -1,17 +1,21 @@
 import openai
-from configs import WhisperConfigs
+from loguru import logger
+
+from project_configs.configs import WhisperConfigs
 
 
 class WhisperClient:
-    def __init__(self, conf: WhisperConfigs):
+    def __init__(self,
+                 api_key,
+                 configs:WhisperConfigs):
         """
         Конструктор класса.
         Инициализация API ключа и создание асинхронного клиента.
         """
-        self.configs = conf
+        self.configs = configs
 
-        openai.api_key = self.configs.api
-        self.client = openai.AsyncClient()  # Обновлено с использованием правильного класса
+        openai.api_key = api_key
+        self.client = openai.AsyncClient(api_key=api_key)
 
         # Инициализация базовых промптов
         self.base_prompts = {
@@ -37,6 +41,6 @@ class WhisperClient:
     async def send_request(self, whisper_args: dict) -> str:
         response = await self.client.audio.transcriptions.create(**whisper_args)
         if response.text:
-            print("response from whisper_package received")
+            logger.info("response from whisper_package received")
         return response.text
 

@@ -1,28 +1,23 @@
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
-from aio_pika.abc import AbstractRobustConnection, AbstractRobustChannel
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
-from redis import asyncio as aioredis
+from faststream.rabbit import RabbitBroker
+from loguru import logger
 
-from container import listener
+from container import settings, components
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    redis = aioredis.from_url("redis://localhost:6379")
-    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
-    # инициализировать подключение к брокеру
-    connection: AbstractRobustConnection = await listener.connect()
-    channel: AbstractRobustChannel = await connection.channel()
-    process_exchange = await channel.declare_exchange(name='processor', type='direct')
-    await channel.declare_queue(name='transcribe_from_youtube_queue', durable=True)
-    await channel.declare_queue(name='transcribe_from_storage_queue', durable=True)
-    app.state.chanel = channel
-    app.state.process_exchange = process_exchange
-
+    logger.info("Запущен инициализатор при сервере")
+    FastAPICache.init(components.redis, prefix="fastapi-cache")
+    broker = RabbitBroker(f"amqp://{settings.rabbitmq.rabitmq_user}:"
+                          f"{settings.rabbitmq.rabitmq_password}@"
+                          f"{settings.rabbitmq.rabitmq_host}:{settings.rabbitmq.rabitmq_port}")
+    await broker.connect()
+    app.state.broker = broker
+    print()
     yield
     # закрыть подключение к брокеру
-    await connection.close()

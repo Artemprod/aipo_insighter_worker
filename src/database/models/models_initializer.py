@@ -6,6 +6,8 @@ from . utils.sources import Sources
 from . consumption.asssistant import AIAssistant
 from . consumption.summarization import SummaryTexts
 from . consumption.transcribition import TranscribedTexts
+from . consumption.history import HistoryModel
 from . payment.currencie import Currencies
 from . payment.pricing import Pricing
+
 

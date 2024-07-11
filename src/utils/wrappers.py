@@ -2,6 +2,8 @@ import asyncio
 import time
 from functools import wraps, partial
 
+from loguru import logger
+
 
 def async_wrap(func):
     @wraps(func)
@@ -22,7 +24,7 @@ def async_timing_decorator(func):
         result = await func(*args, **kwargs)
         end_time = time.time()
         duration = end_time - start_time
-        print(f"Function {func.__name__} took {duration:.4f} seconds to complete.")
+        logger.info(f"Function {func.__name__} took {duration:.4f} seconds to complete.")
         return result
 
     return wrapper

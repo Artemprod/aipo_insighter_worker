@@ -1,75 +1,133 @@
-import gc
+from abc import ABC
 from datetime import datetime
 
+from faststream.nats import NatsBroker
+from loguru import logger
+
+from container import settings
+from src.consumption.consumers.interface import ITranscriber, ISummarizer
+from src.consumption.models.publisher.triger import PublishTrigger
+from src.database.repositories.interface import IRepositoryContainer
+from src.database.repositories.storage_container import Repositories
+from src.file_manager.interface import IBaseFileLoader
 from src.pipelines.models import PiplineData
-from src.publishers.models import TranscribedTextTrigger, SummaryTextTrigger
+
+from src.utils.path_opertaions import parse_path, create_temp_path, clear_temp_dir
 
 
-class Pipeline:
-    def __init__(self, repo, loader, file_cropper, transcriber, summarizer, publisher, pipeline_data: PiplineData):
+class Pipeline(ABC):
+    temp_history_date = {}
+
+    def __init__(self,
+                 repo: Repositories,
+                 loader: IBaseFileLoader,
+                 transcriber: ITranscriber,
+                 summarizer: ISummarizer,
+                 ):
+
         self.repo = repo
         self.loader = loader
-        self.cropper = file_cropper
         self.transcriber = transcriber
         self.summarizer = summarizer
-        self.publisher = publisher
-        self.pipeline_data = pipeline_data
 
-    async def run(self):
-        try:
-            file = await self.loader()
-            bunch_of_files = await self.cropper(file)
-            transcribed_text = await self.transcriber(bunch_of_files)
+    async def run(self, pipeline_data: PiplineData) -> int | None:
+        logger.info(f"Пайплайн запустился")
 
-            # Сохранение транскрибированного текста
-            text_model = await self.repo.transcribed_text_repository.save(
-                text=transcribed_text,
-                user_id=self.pipeline_data.initiator_user_id,
-                service_source=self.pipeline_data.service_source,
-                transcription_date=datetime.now(),
-                transcription_time=datetime.now()
-            )
-
-            # Публикация результата транскрибированного текста
-            await self.publisher(
-                result=TranscribedTextTrigger(tex_id=text_model.id, user_id=self.pipeline_data.initiator_user_id),
-                queue=self.pipeline_data.publisher_queue
-            )
-
-            # Получение помощника для суммаризации
-            assistant = await self.repo.assistant_repository.get(assistant_id=self.pipeline_data.assistant_id)
-
-            # Суммаризация текста
-            summary = await self.summarizer(transcribed_text, assistant)
-
-            # Сохранение суммарного текста
-            summary_text_model = await self.repo.summary_text_repository.save(
-                text=summary,
-                transcribed_text_id=text_model.id,
-                user_id=self.pipeline_data.initiator_user_id,
-                service_source=self.pipeline_data.service_source,
-                summary_date=datetime.now()
-            )
-
-            # Публикация результата суммарного текста
-            await self.publisher(
-                result=SummaryTextTrigger(tex_id=summary_text_model.id, user_id=self.pipeline_data.initiator_user_id),
-                queue=self.pipeline_data.publisher_queue
-            )
-
-            return summary
-        except Exception as e:
-            # Улучшенное логирование ошибок
-            print(f"An error occurred: {e}")
+        file_name = parse_path(path=pipeline_data.file_destination)
+        temp_file_path = create_temp_path(file_name=file_name,
+                                          user_id=pipeline_data.initiator_user_id)
+        file = await self.loader(pipeline_data.file_destination, temp_file_path)
+        transcribed_text = await self.transcriber(file)
+        if not transcribed_text:
+            logger.info("Нету транскрибированного текста")
             return None
-        finally:
-            # Очистка ресурсов
-            await self.cleanup()
 
-    async def cleanup(self):
-        self.loader = None
-        self.cropper = None
-        self.publisher = None
-        self.transcriber = None
-        self.summarizer = None
-        gc.collect()
+        logger.info(f"получен транскриби рованый текст для пользвоателя {pipeline_data.initiator_user_id}")
+        text_model = await self.save_transcribed_text(transcribed_text, pipeline_data)
+        await self.publish_transcribed_text(text_model, pipeline_data)
+
+        assistant = await self.repo.assistant_repository.get(assistant_id=pipeline_data.assistant_id)
+        summary = await self.summarizer(transcribed_text=transcribed_text, assistant=assistant)
+
+        if not summary:
+            logger.info("Нету саммари")
+            return None
+
+        summary_text_model = await self.save_summary_text(summary=summary, pipeline_data=pipeline_data)
+        await self.publish_summary_text(summary_text_model, pipeline_data)
+
+        await self.save_new_history(transcribe_id=int(text_model.id),
+                                        summary_id=int(summary_text_model.id),
+                                        pipeline_data=pipeline_data)
+
+       
+        if temp_file_path:
+            clear_temp_dir(temp_file_path)
+            logger.info(f"очистил времмную папку {temp_file_path}")
+
+
+
+        return 1
+
+    async def save_transcribed_text(self, transcribed_text: str, pipeline_data: PiplineData):
+        logger.info(f"сохранил транскрибированый текст")
+        return await self.repo.transcribed_text_repository.save(
+            text=transcribed_text,
+            user_id=pipeline_data.initiator_user_id,
+            service_source=pipeline_data.service_source,
+            transcription_date=datetime.now(),
+            transcription_time=datetime.now()
+        )
+
+
+    async def save_new_history(self, transcribe_id: int, summary_id: int, pipeline_data: PiplineData):
+       logger.info(f"сохраняю новую историю")
+       return await self.repo.history_repository.add_history(
+              user_id=int(pipeline_data.initiator_user_id),
+              unique_id=str(pipeline_data.unique_id),
+              service_source=str(pipeline_data.service_source),
+              summary_id=summary_id,
+              transcribe_id=transcribe_id)
+        
+       
+         
+        
+
+
+
+
+    @staticmethod
+    async def publish_transcribed_text(text_model, pipeline_data: PiplineData):
+        async with NatsBroker(servers=settings.nats_publisher.nats_server_url) as broker:
+            await broker.publish(
+                message=PublishTrigger(type="transcribation",
+                                       unique_id=pipeline_data.unique_id,
+                                       tex_id=int(text_model.id),
+                                       user_id=int(pipeline_data.initiator_user_id)),
+                subject=f"{pipeline_data.publisher_queue}.transcribe",
+            )
+            logger.info("Отправил транскрибацию")
+
+    @staticmethod
+    async def publish_summary_text(summary_text_model, pipeline_data: PiplineData):
+        async with NatsBroker(servers=settings.nats_publisher.nats_server_url) as broker:
+            await broker.publish(
+                message=PublishTrigger(type="summary",
+                                       unique_id=pipeline_data.unique_id,
+                                       tex_id=int(summary_text_model.id),
+                                       user_id=int(pipeline_data.initiator_user_id)),
+                subject=f"{pipeline_data.publisher_queue}.summary",
+
+            )
+            logger.info("Отправил саммари")
+
+
+    async def save_summary_text(self, summary: str, pipeline_data: PiplineData):
+        logger.info(f"сохраняю текст")
+        return await self.repo.summary_text_repository.save(
+            text=summary,
+            user_id=pipeline_data.initiator_user_id,
+            service_source=pipeline_data.service_source,
+            summary_date=datetime.now()
+        )
+

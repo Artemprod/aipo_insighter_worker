@@ -2,18 +2,18 @@ import asyncio
 import os
 
 from aiogram.client.session import aiohttp
+from loguru import logger
 
 from src.file_manager.interface import IBaseFileLoader
 
 
 class S3FileLoader(IBaseFileLoader):
-    def __init__(self, s3_url):
-        self.s3_url: str = s3_url
+    def __init__(self):
+        pass
 
-    async def load(self) -> None:
-        current_directory = os.getcwd()  # Получаем текущую директорию
-        destination_filename = os.path.join(current_directory, self.s3_url.split('/')[-1])  # получение имени файла
-        await self.download_file_from_url(self.s3_url, destination_path=destination_filename)
+    async def load(self, s3_url, destination_directory: str) -> str:
+        await self.download_file_from_url(s3_url, destination_path=destination_directory)
+        return destination_directory
 
     @staticmethod
     async def download_file_from_url(url: str, destination_path: str) -> None:
@@ -26,17 +26,17 @@ class S3FileLoader(IBaseFileLoader):
                         if not chunk:
                             break
                         file.write(chunk)
-                print(f"File downloaded to {destination_path}")
+                logger.info(f"File downloaded to {destination_path}")
 
-    async def __call__(self, *args, **kwargs):
-        return await self.load()
-
-
-async def main():
-    file_loader = S3FileLoader(
-        'https://b8ffac09-9e42-4827-b4b2-22f1081ea55c.selstorage.ru/posting-label-58515541-0006-2.pdf')
-    await file_loader.load()
+    async def __call__(self, s3_url, destination_directory: str):
+        return await self.load(s3_url, destination_directory)
 
 
-if __name__ == '__main__':
-    asyncio.run(main())
+# async def main():
+#     file_loader = S3FileLoader(
+#         'https://b8ffac09-9e42-4827-b4b2-22f1081ea55c.selstorage.ru/posting-label-58515541-0006-2.pdf')
+#     await file_loader.load()
+
+
+# if __name__ == '__main__':
+#     asyncio.run(main())

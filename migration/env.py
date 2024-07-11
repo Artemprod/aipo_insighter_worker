@@ -2,17 +2,18 @@ import asyncio
 from logging.config import fileConfig
 
 from alembic import context
+from alembic.script import ScriptDirectory
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from container import url as DB_URL
+from container import settings
 from src.database.models.models_initializer import ModelBase
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", DB_URL)
+config.set_main_option("sqlalchemy.url", settings.postgres.postgres_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -31,6 +32,22 @@ target_metadata = ModelBase.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+def process_revision_directives(context, revision, directives):
+    # extract Migration
+    migration_script = directives[0]
+    # extract current head revision
+    head_revision = ScriptDirectory.from_config(context.config).get_current_head()
+
+    if head_revision is None:
+        # edge case with first migration
+        new_rev_id = 1
+    else:
+        # default branch with incrementation
+        last_rev_id = int(head_revision.lstrip("0"))
+        new_rev_id = last_rev_id + 1
+    # fill zeros up to 4 digits: 1 -> 0001
+    migration_script.rev_id = "{0:04}".format(new_rev_id)
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -44,12 +61,13 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option(DB_URL)
+    url = config.get_main_option(settings.postgres.postgres_url)
     context.configure(
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        process_revision_directives=process_revision_directives,
     )
 
     with context.begin_transaction():
@@ -57,7 +75,8 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(connection=connection, target_metadata=target_metadata, process_revision_directives=process_revision_directives,
+                      )
 
     with context.begin_transaction():
         context.run_migrations()

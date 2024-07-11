@@ -1,0 +1,19 @@
+exchangers:
+  process_exchanger:
+    name: "process_exchanger"  # Название обменника
+    type: "direct"  # Тип обменника
+    queues:
+      - "youtube"  # Очередь для обработки данных YouTube
+      - "storage"  # Очередь для обработки данных storage
+
+consumers:
+  youtube_consumer:
+    exchanger: "exchangers.process_exchanger"  # Ссылка на обменник из секции exchangers
+    queue: "youtube"  # Очередь, которую будет обрабатывать consumer
+    routing_key: "youtube"  # Ключ маршрутизации для обменника
+
+  storage_consumer:
+    exchanger: "exchangers.process_exchanger"  # Ссылка на обменник из секции exchangers
+    queue: "storage"  # Очередь, которую будет обрабатывать consumer
+    routing_key: "storage"  # Ключ маршрутизации для обменника
+

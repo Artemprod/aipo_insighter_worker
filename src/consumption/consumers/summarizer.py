@@ -1,4 +1,5 @@
-from abc import ABC, abstractmethod
+import asyncio
+from typing import List
 
 from langchain.chains import MapReduceDocumentsChain, ReduceDocumentsChain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
@@ -8,29 +9,20 @@ from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import CharacterTextSplitter
 
+from abc import ABC, abstractmethod
+
+from src.consumption.consumers.interface import ISummarizer
 from src.consumption.models.consumption.asssistant import AIAssistant
+from src.services.openai_api_package.chat_gpt_package.client import GPTClient
+from src.services.openai_api_package.chat_gpt_package.model import GPTMessage, GPTRole
 
 
-class BaseSummarizer(ABC):
+class DocumentSummarizer(ISummarizer):
 
     def __init__(self, model="gpt-3.5-turbo-0125", max_response_tokens=4000):
         self.model = model
         self.max_response_tokens = max_response_tokens
         self.llm = None
-
-    @abstractmethod
-    async def setup_chains(self, assistant: AIAssistant):
-        pass
-
-    @abstractmethod
-    async def __call__(self, transcribed_text, assistant: AIAssistant):
-        pass
-
-
-class DocumentSummarizer(BaseSummarizer):
-
-    def __init__(self, model="gpt-3.5-turbo-0125", max_response_tokens=4000):
-        super().__init__(model, max_response_tokens)
         self.map_reduce_chain = None
         self.map_prompt = None
         self.reduce_prompt = None
@@ -93,8 +85,27 @@ class DocumentSummarizer(BaseSummarizer):
         docs = [Document(page_content=x) for x in text_splitter.split_text(text)]
         return docs
 
-    async def __call__(self, transcribed_text, assistant: AIAssistant):
+    async def summarize(self, transcribed_text, assistant: AIAssistant):
         self.setup_chains(assistant)
         self.setup_map_reduce_chain()
         split_docs = self.split_docs(text=transcribed_text)
         return self.map_reduce_chain.run(split_docs)
+
+    async def __call__(self, transcribed_text, assistant: AIAssistant):
+        task = asyncio.create_task(self.summarize(transcribed_text, assistant))
+        return await task
+
+
+class GptSummarizer(ISummarizer):
+
+    def __init__(self,
+                 gpt_client: GPTClient):
+        self.gpt_client = gpt_client
+
+    async def summarize(self, transcribed_text: str, assistant: AIAssistant) -> str:
+        messages: List[GPTMessage] = [GPTMessage(role=GPTRole.USER, content=assistant.user_prompt + transcribed_text )]
+        system_message: GPTMessage = GPTMessage(role=GPTRole.SYSTEM, content=assistant.assistant_prompt)
+        return await self.gpt_client.complete(messages, system_message)
+
+    async def __call__(self, transcribed_text: str, assistant: AIAssistant) -> str:
+        return await self.summarize(transcribed_text, assistant)
