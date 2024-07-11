@@ -66,9 +66,8 @@ services:
         - "${RABBITMQ_PORT}:5672"
         - "15672:15672"
       environment:
-        - "RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}"
-        - "RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}"
-      hostname: "worker_insighter"
+        RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASSWORD}"
+        RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER}"
       restart: always
       volumes:
         - rabbitmq_server:/rabit/data/
