@@ -45,7 +45,7 @@ services:
     networks:
       - insighter_worker_prod_new
 
-  nats:
+  nats_production:
     image: nats
     container_name: nats_worker
     env_file:
@@ -59,7 +59,7 @@ services:
     networks:
       - insighter_worker_prod_new
 
-  rabbitmq_server:
+  rabbitmq_server_pruduction:
       image: rabbitmq:management
       container_name: rabbit_worker
       ports:
