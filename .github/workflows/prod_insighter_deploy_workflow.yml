@@ -128,7 +128,7 @@ jobs:
 
         - name: Deploy
           run: |
-            echo "${{ vars.PRODUCTION_ENV_FILE }}" >> ./deploy/prod/.env
+            echo "${{vars.PRODUCTION_ENV_FILE}}" >> ./deploy/prod/.env
             export IMAGE_TAG=sha-${{ steps.set_sha.outputs.sha_short }}
             docker --context prod_worker_context compose -f deploy/prod/docker-compose.yml up -d --wait --wait-timeout 60
           
