@@ -277,8 +277,8 @@ services:
 volumes:
   redis_cache:
   postgres:
-  nats:
-  rabbitmq_server:
+  nats_production:
+  rabbitmq_server_pruduction:
   worker_volume:
 
 networks:
