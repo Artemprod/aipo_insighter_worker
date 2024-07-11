@@ -133,7 +133,6 @@
 #            docker --context prod_worker_context compose -f deploy/prod/docker-compose.yml up -d --wait --wait-timeout 60
 #
 name: Insighter worker prod deployment
-
 on:
   workflow_dispatch:
   push:
