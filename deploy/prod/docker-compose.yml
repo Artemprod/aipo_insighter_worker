@@ -15,7 +15,7 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
 #  migration:
 #    image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
@@ -28,7 +28,7 @@ services:
 #      DATABASE_URL: "${POSTGRES_URL}"
 #    command: ["make", "migrate"]
 #    networks:
-#      - insighter_worker_stage_new
+#      - insighter_worker_prod_new
 
 
   redis_cache:
@@ -43,7 +43,7 @@ services:
       - redis_cache:/DB/Redis/data/
     command: ["redis-server", "--port", "${REDIS_PORT}"]
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
   nats:
     image: nats
@@ -57,19 +57,23 @@ services:
     volumes:
       - nats:/DB/nats/data/
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
   rabbitmq_server:
-    image: rabbitmq:management
-    container_name: rabbit_worker
-    ports:
-      - "${RABITMQ_PORT}:${RABITMQ_PORT}"
-      - "15672:15672"
-    restart: always
-    volumes:
-      - rabbitmq_server:/Rabit/data/
-    networks:
-      - insighter_worker_stage_new
+      image: rabbitmq:management
+      container_name: rabbit_worker
+      ports:
+        - "${RABBITMQ_PORT}:5672"
+        - "15672:15672"
+      environment:
+        - "RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}"
+        - "RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}"
+      hostname: "worker_insighter"
+      restart: always
+      volumes:
+        - rabbitmq_server:/rabit/data/
+      networks:
+        - insighter_worker_prod_new
 
   insighter_worker_1:
     depends_on:
@@ -87,7 +91,7 @@ services:
       - .env
     command: ["make", "run_worker"]
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
   insighter_worker_2:
     depends_on:
@@ -105,7 +109,7 @@ services:
       - .env
     command: ["make", "run_worker"]
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
   insighter_worker_3:
     depends_on:
@@ -123,7 +127,7 @@ services:
       - .env
     command: ["make", "run_worker"]
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
   insighter_worker_4:
     depends_on:
@@ -133,7 +137,7 @@ services:
       - postgres_db
 
     image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
-    container_name: insighter_worker_3
+    container_name: insighter_worker_4
     volumes:
       - worker_volume:/var/lib/worker
     restart: always
@@ -141,7 +145,7 @@ services:
       - .env
     command: [ "make", "run_worker" ]
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
   insighter_worker_5:
     depends_on:
@@ -151,7 +155,7 @@ services:
       - postgres_db
 
     image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
-    container_name: insighter_worker_3
+    container_name: insighter_worker_5
     volumes:
       - worker_volume:/var/lib/worker
     restart: always
@@ -159,7 +163,7 @@ services:
       - .env
     command: [ "make", "run_worker" ]
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
   insighter_worker_6:
     depends_on:
@@ -169,7 +173,7 @@ services:
       - postgres_db
 
     image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
-    container_name: insighter_worker_3
+    container_name: insighter_worker_6
     volumes:
       - worker_volume:/var/lib/worker
     restart: always
@@ -177,7 +181,7 @@ services:
       - .env
     command: [ "make", "run_worker" ]
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
   insighter_worker_7:
     depends_on:
@@ -187,7 +191,7 @@ services:
       - postgres_db
 
     image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
-    container_name: insighter_worker_3
+    container_name: insighter_worker_7
     volumes:
       - worker_volume:/var/lib/worker
     restart: always
@@ -195,7 +199,7 @@ services:
       - .env
     command: [ "make", "run_worker" ]
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
   insighter_worker_8:
     depends_on:
@@ -205,7 +209,7 @@ services:
       - postgres_db
 
     image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
-    container_name: insighter_worker_3
+    container_name: insighter_worker_8
     volumes:
       - worker_volume:/var/lib/worker
     restart: always
@@ -213,7 +217,7 @@ services:
       - .env
     command: [ "make", "run_worker" ]
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
   insighter_worker_9:
     depends_on:
@@ -223,7 +227,7 @@ services:
       - postgres_db
 
     image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
-    container_name: insighter_worker_3
+    container_name: insighter_worker_9
     volumes:
       - worker_volume:/var/lib/worker
     restart: always
@@ -231,7 +235,7 @@ services:
       - .env
     command: [ "make", "run_worker" ]
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
   insighter_worker_10:
     depends_on:
@@ -241,7 +245,7 @@ services:
       - postgres_db
 
     image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
-    container_name: insighter_worker_3
+    container_name: insighter_worker_10
     volumes:
       - worker_volume:/var/lib/worker
     restart: always
@@ -249,16 +253,16 @@ services:
       - .env
     command: [ "make", "run_worker" ]
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
-  insighter_api_server:
+  insighter_fast_api_server:
     depends_on:
       - nats
       - rabbitmq_server
       - redis_cache
       - postgres_db
 
-    container_name: insighter_api_server
+    container_name: insighter_fast_api_server
     image: docker.io/artemprod/insighter_worker:${IMAGE_TAG:-latest}
     volumes:
       - worker_volume:/var/lib/worker
@@ -269,7 +273,7 @@ services:
     ports:
       - "9192:9192"
     networks:
-      - insighter_worker_stage_new
+      - insighter_worker_prod_new
 
 volumes:
   redis_cache:
@@ -279,5 +283,5 @@ volumes:
   worker_volume:
 
 networks:
-  insighter_worker_stage_new:
+  insighter_worker_prod_new:
     external: true
