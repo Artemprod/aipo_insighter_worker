@@ -7,3 +7,9 @@ class PublishTrigger(BaseModel):
     type: str
     tex_id: int
     user_id: int
+
+
+class ErrorMessage(BaseModel):
+    error: str
+    description: str
+    user_id: int
