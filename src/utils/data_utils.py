@@ -17,10 +17,8 @@ def remove_duplicates(transcription):
     return '\n'.join(unique_sentences)
 
 
-def from_text(response: TranscriptResponse) -> str:
-    if not response.utterances:
-        return response.text
-    else:
+def from_text(response: TranscriptResponse, dual_channel) -> str:
+    if dual_channel:
         unique_utterance_text = set()
         text = ""
         for utterance in response.utterances:
@@ -30,4 +28,16 @@ def from_text(response: TranscriptResponse) -> str:
 
             unique_utterance_text.add(utterance.text)
         return text
+    else:
+        return response.text
 
+
+def simple_from_text(response: TranscriptResponse, speaker_labels) -> str:
+    if speaker_labels:
+        text = ""
+        for utterance in response.utterances:
+            text += (f"Спикер {utterance.speaker} | {format_time(utterance.start)}, {format_time(utterance.end)}\n"
+                     f"{utterance.text}\n\n")
+        return text
+    else:
+        return response.text

@@ -4,7 +4,6 @@ class TranscriptionError(Exception):
 
 class UnknownTranscriptionError(TranscriptionError):
     def __init__(self, message=None, transcriber=None):
-
         super().__init__(
             f"Unknow trancribation error {message} was occured  in trancriber {transcriber} "
         )
@@ -17,4 +16,18 @@ class APITranscriptionError(TranscriptionError):
         )
 
 
+class NoResponseFromAssembly(TranscriptionError):
+    def __init__(self, exception):
+        self.exception = exception
 
+        super().__init__(
+            f"No response from assembly API  {exception} "
+        )
+
+class NoResponseWhisper(TranscriptionError):
+    def __init__(self, exception):
+        self.exception = exception
+
+        super().__init__(
+            f"No response from whisper API  {exception} "
+        )
