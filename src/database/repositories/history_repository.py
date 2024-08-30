@@ -1,9 +1,8 @@
 import datetime
-from typing import Optional, List
+from typing import Optional
 
 from loguru import logger
 from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.consumption.models.consumption.history import HistoryDTO, HistoryResultDTO
 from src.database.models.consumption.history import HistoryModel
@@ -49,12 +48,11 @@ class HistoryRepository(BaseRepository):
 
     async def check_history(self, user_id: int) -> bool:
         async with self.db_session_manager.session_scope() as session:
-            query = select(HistoryModel).filter(HistoryModel.user_id==user_id)
+            query = select(HistoryModel).filter(HistoryModel.user_id == user_id)
             result = await session.execute(query)
             record = result.scalars().all()
             logger.info(f"Проверка ответа истории {len(record) > 0}")
             return len(record) > 0
-
 
     async def get_history_by_user_id(self, user_id: int) -> list[HistoryResultDTO] | None:
         async with self.db_session_manager.session_scope() as session:
@@ -84,7 +82,7 @@ class HistoryRepository(BaseRepository):
                 history_results.append(history_result)
             return history_results
 
-    async def get_history_by_date(self, user_id: int, date:str) -> list[HistoryResultDTO] | None:
+    async def get_history_by_date(self, user_id: int, date: str) -> list[HistoryResultDTO] | None:
         async with self.db_session_manager.session_scope() as session:
             query = select(HistoryModel, SummaryTexts, TranscribedTexts).select_from(HistoryModel). \
                 join(SummaryTexts, HistoryModel.summary_id == SummaryTexts.id). \
