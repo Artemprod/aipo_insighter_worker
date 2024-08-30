@@ -49,3 +49,11 @@ class StartFromStorageErrorResponse(BaseModel):
     file_path: str = Field()
     storage_url: Optional[str] = None
     description: Optional[str] = None
+
+
+class StartFromYouTubeMessageResponse(BaseModel):
+    status: str = Field()
+
+
+class StartFromS3Response(BaseModel):
+    status: str = Field()

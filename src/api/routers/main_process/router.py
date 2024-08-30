@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status
+from fastapi.responses import JSONResponse
 from faststream.rabbit import RabbitBroker, RabbitQueue, RabbitExchange
 from starlette.requests import Request
 
@@ -11,7 +12,7 @@ processes_router = APIRouter(
 )
 
 
-@processes_router.post("/start_process_from_s3")
+@processes_router.post("/start_process_from_s3", response_model=schemas.StartFromS3Response)
 async def start_task_from_storage(message: schemas.StartFromS3, request: Request):
     broker: RabbitBroker = request.app.state.broker
     await broker.publish(
@@ -19,9 +20,10 @@ async def start_task_from_storage(message: schemas.StartFromS3, request: Request
         queue=RabbitQueue(name=components.rabit_consumers['storage_consumer']['queue'],
                           routing_key=components.rabit_consumers['storage_consumer']['routing_key']),
         exchange=RabbitExchange(components.rabit_consumers['storage_consumer']['exchanger']['name']))
+    return JSONResponse({"status": "queued"}, status_code=status.HTTP_201_CREATED)
 
 
-@processes_router.post("/start_process_from_youtube")
+@processes_router.post("/start_process_from_youtube", response_model=schemas.StartFromYouTubeMessageResponse)
 async def start_task_from_youtube(message: schemas.StartFromYouTubeMessage,
                                   request: Request):
     broker: RabbitBroker = request.app.state.broker
@@ -30,3 +32,4 @@ async def start_task_from_youtube(message: schemas.StartFromYouTubeMessage,
         queue=RabbitQueue(name=components.rabit_consumers['youtube_consumer']['queue'],
                           routing_key=components.rabit_consumers['youtube_consumer']['routing_key']),
         exchange=RabbitExchange(components.rabit_consumers['youtube_consumer']['exchanger']['name']))
+    return JSONResponse({"status": "queued"}, status_code=status.HTTP_201_CREATED)
