@@ -2,6 +2,8 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from src.api.schemas import ServiceSources
+
 
 class StartFromYouTubeMessage(BaseModel):
     unique_id: str = Field()
@@ -9,7 +11,7 @@ class StartFromYouTubeMessage(BaseModel):
     youtube_url: str = Field()
     assistant_id: int = Field()
     publisher_queue: str = Field()
-    source: Optional[str] = None
+    source: ServiceSources
     user_prompt: Optional[str] = None
     description: Optional[str] = None
 
@@ -27,7 +29,7 @@ class StartFromStorageMessage(BaseModel):
     assistant_id: int = Field()
     publisher_queue: str = Field()
     storage_url: Optional[str] = None
-    source: Optional[str] = None
+    source: ServiceSources
     user_prompt: Optional[str] = None
     description: Optional[str] = None
 
@@ -39,7 +41,7 @@ class StartFromS3(BaseModel):
     assistant_id: int = Field()
     publisher_queue: str = Field()
     storage_url: Optional[str] = None
-    source: Optional[str] = None
+    source: ServiceSources
     user_prompt: Optional[str] = None
     description: Optional[str] = None
 

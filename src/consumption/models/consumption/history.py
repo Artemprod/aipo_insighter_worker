@@ -40,7 +40,7 @@ class HistoryResultDTO(BaseModel):
             "user_id": self.user_id,
             "summary_text": self.summary_text,
             "transcribe_text": self.transcribe_text,
-            "date": self.date,
+            "date": self.date.strftime("%Y-%m-%dT%H:%M:%S") if self.date else None  # Преобразование datetime в строку
         }
 
     class Config:
