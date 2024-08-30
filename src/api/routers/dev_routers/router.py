@@ -1,14 +1,9 @@
-from fastapi import HTTPException, APIRouter
-from starlette.requests import Request
-
-
+from fastapi import HTTPException, APIRouter, Request
 
 dev_router = APIRouter(
     prefix="/development",
     tags=["Endpoints for development"],
 )
-
-
 
 
 @dev_router.get("/assistant/get_all")

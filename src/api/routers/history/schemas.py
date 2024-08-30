@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
@@ -10,7 +12,13 @@ class GetHistoryResponse(BaseModel):
     user_id: int = Field()
     summary_text: str
     transcribe_text: str
-    date: str = Field(default='2024-07-22T14:54:46.897345')
+    date: datetime
+
+    class Config:
+        anystr_strip_whitespace = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
 
 
 class GetHistoryResponseList(BaseModel):
