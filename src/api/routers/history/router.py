@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from loguru import logger
@@ -16,12 +18,19 @@ history_router = APIRouter(
     "/get_history", response_model=schemas.GetHistoryResponseList,
     status_code=status.HTTP_200_OK
 )
-async def get_user_history(user_id: int, source: ServiceSources, request: Request):
-    """Получить всю историю запросов у пользователя"""
+async def get_user_history(
+        user_id: int,
+        source: ServiceSources,
+        request: Request,
+        unique_id: Optional[str] = None
+):
+    """Получить всю историю запросов у пользователя, если указать параметр unique_id то вернет определенную историю"""
     logger.info("user_id", user_id)
     try:
         history: list[HistoryResultDTO] = await request.app.repositories.history_repository.get_history_by_user_id(
-            user_id=user_id, source=source.value
+            user_id=user_id,
+            source=source.value,
+            unique_id=unique_id
         )
         if history is not None:
             result = [i.to_dict() for i in history]
@@ -54,7 +63,7 @@ async def get_user_history_by_date(user_id: int, source: ServiceSources, date, r
 
 
 @history_router.get(
-    "/check_history", response_model=schemas.HistoryCheckResponse,
+    "/check_history", response_model=schemas.HistoryCheckDTO,
     status_code=status.HTTP_200_OK
 )
 async def get_user_history_by_date(user_id: int, source: ServiceSources, request: Request):

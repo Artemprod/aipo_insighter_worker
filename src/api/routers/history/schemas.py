@@ -3,12 +3,13 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
-class HistoryCheckResponse(BaseModel):
+class HistoryCheckDTO(BaseModel):
     is_history: bool
 
 
-class GetHistoryResponse(BaseModel):
+class GetHistoryDTO(BaseModel):
     id: int = Field()
+    unique_id: str
     user_id: int = Field()
     summary_text: str
     transcribe_text: str
@@ -22,4 +23,4 @@ class GetHistoryResponse(BaseModel):
 
 
 class GetHistoryResponseList(BaseModel):
-    result: list[GetHistoryResponse]
+    result: list[GetHistoryDTO]

@@ -29,6 +29,7 @@ class HistoryDTO(BaseModel):
 
 class HistoryResultDTO(BaseModel):
     id: Optional[int]
+    unique_id: str
     user_id: int
     summary_text: Optional[str]
     transcribe_text: Optional[str]
@@ -38,6 +39,7 @@ class HistoryResultDTO(BaseModel):
         return {
             "id": self.id,
             "user_id": self.user_id,
+            "unique_id": self.unique_id,
             "summary_text": self.summary_text,
             "transcribe_text": self.transcribe_text,
             "date": self.date.strftime("%Y-%m-%dT%H:%M:%S") if self.date else None  # Преобразование datetime в строку

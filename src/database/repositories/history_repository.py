@@ -56,13 +56,19 @@ class HistoryRepository(BaseRepository):
             logger.info(f"Проверка ответа истории {len(record) > 0}")
             return len(record) > 0
 
-    async def get_history_by_user_id(self, user_id: int, source: str) -> list[HistoryResultDTO] | None:
+    async def get_history_by_user_id(
+            self, user_id: int, source: str, unique_id: Optional[str] = None
+    ) -> list[HistoryResultDTO] | None:
         async with self.db_session_manager.session_scope() as session:
             query = select(HistoryModel, SummaryTexts, TranscribedTexts).select_from(HistoryModel). \
                 join(SummaryTexts, HistoryModel.summary_id == SummaryTexts.id). \
                 join(TranscribedTexts, HistoryModel.transcribe_id == TranscribedTexts.id). \
                 filter(HistoryModel.user_id == user_id). \
                 filter(HistoryModel.service_source == source)
+                # filter(HistoryModel.unique_id == unique_id)
+
+            if unique_id is not None:
+                query = query.filter(HistoryModel.unique_id == unique_id)
 
             result = await session.execute(query)
             records = result.fetchall()
@@ -77,6 +83,7 @@ class HistoryRepository(BaseRepository):
 
                 history_result = HistoryResultDTO(
                     id=history_model.id,
+                    unique_id=history_model.unique_id,
                     user_id=history_model.user_id,
                     summary_text=summary_texts_model.summary_text if summary_texts_model else None,
                     transcribe_text=transcribed_texts_model.text if transcribed_texts_model else None,
