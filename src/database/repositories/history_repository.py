@@ -2,7 +2,7 @@ import datetime
 from typing import Optional
 
 from loguru import logger
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_
 
 from src.consumption.models.consumption.history import HistoryDTO, HistoryResultDTO
 from src.database.models.consumption.history import HistoryModel
@@ -49,8 +49,8 @@ class HistoryRepository(BaseRepository):
     async def check_history(self, user_id: int, source: str) -> bool:
         async with self.db_session_manager.session_scope() as session:
             query = select(HistoryModel). \
-                filter(HistoryModel.user_id == user_id). \
-                filter(HistoryModel.service_source == source)
+                filter(and_(HistoryModel.user_id == user_id, HistoryModel.service_source == source))
+
             result = await session.execute(query)
             record = result.scalars().all()
             logger.info(f"Проверка ответа истории {len(record) > 0}")
@@ -63,9 +63,7 @@ class HistoryRepository(BaseRepository):
             query = select(HistoryModel, SummaryTexts, TranscribedTexts).select_from(HistoryModel). \
                 join(SummaryTexts, HistoryModel.summary_id == SummaryTexts.id). \
                 join(TranscribedTexts, HistoryModel.transcribe_id == TranscribedTexts.id). \
-                filter(HistoryModel.user_id == user_id). \
-                filter(HistoryModel.service_source == source)
-                # filter(HistoryModel.unique_id == unique_id)
+                filter(and_(HistoryModel.user_id == user_id, HistoryModel.service_source == source))
 
             if unique_id is not None:
                 query = query.filter(HistoryModel.unique_id == unique_id)
