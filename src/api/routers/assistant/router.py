@@ -19,7 +19,7 @@ async def get_all_assistants(request: Request):
     try:
         assistants = await request.app.repositories.assistant_repository.get_all()
         if assistants is not None:
-            return JSONResponse(content=assistants)
+            return assistants
         else:
             raise HTTPException(status_code=404, detail="assistants not found")
     except Exception as e:
