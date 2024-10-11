@@ -122,14 +122,14 @@ class Pipeline(ABC):
             result = await self.repo.transcribed_text_repository.save(
                 text=transcribed_text,
                 user_id=pipeline_data.initiator_user_id,
-                service_source=pipeline_data.service_source,
+                service_source=pipeline_data.service_source.name,
                 transcription_date=datetime.now(),
                 transcription_time=datetime.now()
             )
             logger.info(f"сохранил транскрибированый текст")
             return result
         except Exception as e:
-            logger.info(f"Ошибка при сохранении данных в бд {e}")
+            logger.error(f"Ошибка при сохранении данных в бд {e}")
             raise e
 
     async def save_new_history(self, transcribe_id: int, summary_id: int, pipeline_data: PiplineData):
