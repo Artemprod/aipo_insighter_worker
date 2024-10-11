@@ -9,7 +9,7 @@ class HistoryCheckDTO(BaseModel):
 
 class GetHistoryDTO(BaseModel):
     id: int = Field()
-    unique_id: str
+    unique_id: str = Field()
     user_id: int = Field()
     summary_text: str
     transcribe_text: str
