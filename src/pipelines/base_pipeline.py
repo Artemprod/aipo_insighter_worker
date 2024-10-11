@@ -129,6 +129,7 @@ class Pipeline(ABC):
             logger.info(f"сохранил транскрибированый текст")
             return result
         except Exception as e:
+            logger.info(f"Ошибка при сохранении данных в бд {e}")
             raise e
 
     async def save_new_history(self, transcribe_id: int, summary_id: int, pipeline_data: PiplineData):
