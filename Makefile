@@ -12,6 +12,8 @@ make-migrations:
 
 migrate:
 	alembic upgrade head
+
+run_migrations_server: migrate run_server
 #
 #.PHONY: help
 #
