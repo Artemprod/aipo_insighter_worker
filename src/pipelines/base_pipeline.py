@@ -122,7 +122,7 @@ class Pipeline(ABC):
             result = await self.repo.transcribed_text_repository.save(
                 text=transcribed_text,
                 user_id=pipeline_data.initiator_user_id,
-                service_source=pipeline_data.service_source.name,
+                service_source=pipeline_data.service_source,
                 transcription_date=datetime.now(),
                 transcription_time=datetime.now()
             )
