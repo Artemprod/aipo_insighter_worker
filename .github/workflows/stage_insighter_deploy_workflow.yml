@@ -10,6 +10,8 @@ jobs:
       steps:
         - name: Get the code from repo
           uses: actions/checkout@v4
+        - name: install dependencies for ubuntu
+          run: apt install python3-xyz -y
         - name: Install pipx
           run: pip install pipx
         - name: Install poetry
