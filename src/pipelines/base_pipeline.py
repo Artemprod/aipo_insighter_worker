@@ -14,7 +14,6 @@ from src.file_manager.exceptions.s3 import S3FileNotDownloaded
 from src.file_manager.exceptions.youtube_loader import YoutubeAudioNotDownloaded
 from src.file_manager.interface import IBaseFileLoader
 from src.pipelines.models import PiplineData
-
 from src.utils.path_opertaions import create_temp_path, clear_temp_dir, is_youtube_url, \
     create_s3_file_name, create_youtube_file_name
 from src.utils.utils_exceptions import NoPath, NoYoutubeUrl
@@ -122,7 +121,7 @@ class Pipeline(ABC):
             result = await self.repo.transcribed_text_repository.save(
                 text=transcribed_text,
                 user_id=pipeline_data.initiator_user_id,
-                service_source=pipeline_data.service_source,
+                service_source=pipeline_data.service_source.value,
                 transcription_date=datetime.now(),
                 transcription_time=datetime.now()
             )
@@ -137,7 +136,7 @@ class Pipeline(ABC):
         return await self.repo.history_repository.add_history(
             user_id=int(pipeline_data.initiator_user_id),
             unique_id=str(pipeline_data.unique_id),
-            service_source=str(pipeline_data.service_source),
+            service_source=str(pipeline_data.service_source.value),
             summary_id=summary_id,
             transcribe_id=transcribe_id)
 
@@ -181,6 +180,6 @@ class Pipeline(ABC):
         return await self.repo.summary_text_repository.save(
             text=summary,
             user_id=pipeline_data.initiator_user_id,
-            service_source=pipeline_data.service_source,
+            service_source=pipeline_data.service_source.value,
             summary_date=datetime.now()
         )

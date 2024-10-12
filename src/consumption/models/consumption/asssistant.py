@@ -3,9 +3,6 @@ from datetime import datetime
 from typing import Optional
 
 
-
-
-
 @dataclass
 class AIAssistant:
     assistant: str
