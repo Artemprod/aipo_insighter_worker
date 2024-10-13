@@ -11,7 +11,7 @@ class StartFromYouTubeMessage(BaseModel):
     youtube_url: str = Field()
     assistant_id: int = Field()
     publisher_queue: str = Field()
-    source: str = Field()
+    source: ServiceSources
     user_prompt: Optional[str] = None
     description: Optional[str] = None
 
