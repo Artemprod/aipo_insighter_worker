@@ -31,7 +31,6 @@ async def lifespan(context: ContextRepo):
 
 
 async def main():
-
     broker = RabbitBroker(f"amqp://{settings.rabbitmq.rabitmq_user}:"
                           f"{settings.rabbitmq.rabitmq_password}@"
                           f"{settings.rabbitmq.rabitmq_host}:{settings.rabbitmq.rabitmq_port}")

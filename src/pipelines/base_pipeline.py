@@ -98,6 +98,39 @@ class Pipeline(ABC):
                 logger.info(f"Очистил временную папку {temp_file_path}")
             return 1
 
+    async def save_transcribed_text(self, transcribed_text: str, pipeline_data: PiplineData):
+        try:
+            result = await self.repo.transcribed_text_repository.save(
+                text=transcribed_text,
+                user_id=pipeline_data.initiator_user_id,
+                service_source=pipeline_data.service_source.value,
+                transcription_date=datetime.now(),
+                transcription_time=datetime.now()
+            )
+            logger.info(f"сохранил транскрибированый текст")
+            return result
+        except Exception as e:
+            logger.error(f"Ошибка при сохранении данных в бд {e}")
+            raise e
+
+    async def save_summary_text(self, summary: str, pipeline_data: PiplineData):
+        logger.info(f"сохраняю текст")
+        return await self.repo.summary_text_repository.save(
+            text=summary,
+            user_id=pipeline_data.initiator_user_id,
+            service_source=pipeline_data.service_source.value,
+            summary_date=datetime.now()
+        )
+
+    async def save_new_history(self, transcribe_id: int, summary_id: int, pipeline_data: PiplineData):
+        logger.info(f"сохраняю новую историю")
+        return await self.repo.history_repository.add_history(
+            user_id=int(pipeline_data.initiator_user_id),
+            unique_id=str(pipeline_data.unique_id),
+            service_source=str(pipeline_data.service_source.value),
+            summary_id=summary_id,
+            transcribe_id=transcribe_id)
+
     @staticmethod
     async def create_temp_file_path(pipeline_data: PiplineData):
         temp_file_path = None
@@ -115,30 +148,6 @@ class Pipeline(ABC):
             raise
         else:
             return temp_file_path
-
-    async def save_transcribed_text(self, transcribed_text: str, pipeline_data: PiplineData):
-        try:
-            result = await self.repo.transcribed_text_repository.save(
-                text=transcribed_text,
-                user_id=pipeline_data.initiator_user_id,
-                service_source=pipeline_data.service_source.value,
-                transcription_date=datetime.now(),
-                transcription_time=datetime.now()
-            )
-            logger.info(f"сохранил транскрибированый текст")
-            return result
-        except Exception as e:
-            logger.error(f"Ошибка при сохранении данных в бд {e}")
-            raise e
-
-    async def save_new_history(self, transcribe_id: int, summary_id: int, pipeline_data: PiplineData):
-        logger.info(f"сохраняю новую историю")
-        return await self.repo.history_repository.add_history(
-            user_id=int(pipeline_data.initiator_user_id),
-            unique_id=str(pipeline_data.unique_id),
-            service_source=str(pipeline_data.service_source.value),
-            summary_id=summary_id,
-            transcribe_id=transcribe_id)
 
     @staticmethod
     async def publish_transcribed_text(text_model, pipeline_data: PiplineData):
@@ -174,12 +183,3 @@ class Pipeline(ABC):
 
             )
             logger.info("Отправил саммари")
-
-    async def save_summary_text(self, summary: str, pipeline_data: PiplineData):
-        logger.info(f"сохраняю текст")
-        return await self.repo.summary_text_repository.save(
-            text=summary,
-            user_id=pipeline_data.initiator_user_id,
-            service_source=pipeline_data.service_source.value,
-            summary_date=datetime.now()
-        )

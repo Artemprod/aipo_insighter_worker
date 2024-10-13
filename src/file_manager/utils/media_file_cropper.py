@@ -18,7 +18,6 @@ class BaseCropper(ICropper):
                     ):
         self.chunk_length_seconds = chunk_lents_seconds
 
-
     async def crop_file(self, *args, **kwargs):
         raise NotImplementedError
 
@@ -73,4 +72,3 @@ class AsyncCropper(BaseCropper):
 
     async def __call__(self, file_path, output_path, max_concurrent_tasks=None):
         return await self.crop_file(file_path, output_path, max_concurrent_tasks)
-
