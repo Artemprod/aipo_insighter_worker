@@ -1,7 +1,3 @@
-import asyncio
-import json
-
-from aiormq.abc import DeliveredMessage
 from loguru import logger
 
 from src.api.routers.main_process.schemas import StartFromYouTubeMessage
@@ -24,6 +20,7 @@ async def create_pipeline(query_message, utils):
         service_source=query_message.source,
         assistant_id=query_message.assistant_id,
         file_destination=query_message.youtube_url,
+        user_prompt=query_message.user_prompt,
     )
 
     pipeline: Pipeline = Pipeline(

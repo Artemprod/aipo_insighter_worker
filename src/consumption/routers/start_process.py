@@ -15,6 +15,7 @@ process_router = RabbitRouter(prefix="")
                                              routing_key=components.rabit_consumers['youtube_consumer']['routing_key']),
                            exchange=components.rabit_consumers['youtube_consumer']['exchanger']['name'])
 async def handle_youtube_response(msg: RabbitMessage, context=Context()):
+    print(json.loads(msg.body.decode("utf-8")))
     task = asyncio.create_task(
         on_message_from_youtube_queue(message=json.loads(msg.body.decode("utf-8")), utils=context.utils))
     task.add_done_callback(lambda t: t.exception() if t.exception() else None)

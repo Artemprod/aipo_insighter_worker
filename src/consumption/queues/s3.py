@@ -1,11 +1,7 @@
-import asyncio
-
-from aiormq.abc import DeliveredMessage
 from loguru import logger
 
 from src.api.routers.main_process.schemas import StartFromS3
 from src.pipelines.base_pipeline import Pipeline
-
 from src.pipelines.models import PiplineData
 
 
@@ -24,6 +20,7 @@ async def create_pipeline(query_message, utils):
         service_source=query_message.source,
         assistant_id=query_message.assistant_id,
         file_destination=query_message.s3_path,
+        user_prompt=query_message.user_prompt,
     )
 
     pipeline: Pipeline = Pipeline(
