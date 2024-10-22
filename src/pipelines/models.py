@@ -11,3 +11,4 @@ class PiplineData:
     service_source: ServiceSources
     assistant_id: int
     file_destination: str
+    user_prompt: str

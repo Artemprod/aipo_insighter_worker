@@ -9,8 +9,6 @@ from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import CharacterTextSplitter
 
-from abc import ABC, abstractmethod
-
 from src.consumption.consumers.interface import ISummarizer
 from src.consumption.exeptions.summarize import NoResponseFromChatGptSummarization
 from src.consumption.models.consumption.asssistant import AIAssistant
@@ -31,33 +29,35 @@ class DocumentSummarizer(ISummarizer):
         self.reduce_chain = None
         self.map_chain = None
 
-    def setup_chains(self, assistant: AIAssistant):
+    def setup_chains(self, assistant: AIAssistant, user_prompt: str):
         self.llm = ChatOpenAI(temperature=0, model=self.model, )
         # Set up templated prompts
-        self.setup_map_template(assistant)
-        self.setup_reduce_template(assistant)
+        self.setup_map_template(assistant, user_prompt)
+        self.setup_reduce_template(assistant, user_prompt)
 
         # Set up chains for processing documents
         self.map_chain = LLMChain(llm=self.llm, prompt=self.map_prompt, )
         self.reduce_chain = LLMChain(llm=self.llm, prompt=self.reduce_prompt, )
         self.document_combiner = self.create_document_combiner()
 
-    def setup_map_template(self, assistant: AIAssistant):
+    def setup_map_template(self, assistant: AIAssistant, user_prompt: str):
         map_template = f"""
             Ниже представлен набор документов которые представляют часть текста:
              {'{docs}'}
              {assistant.assistant_prompt},
-             {assistant.user_prompt_for_chunks}
+             {assistant.user_prompt_for_chunks},
+             {user_prompt}
            Убедитесь, что ваш анализ помогает восстановить контекст, если эта часть будет рассматриваться отдельно от других частей документа.
            Полезный ответ->:"""
         self.map_prompt = PromptTemplate.from_template(map_template)
 
-    def setup_reduce_template(self, assistant: AIAssistant):
+    def setup_reduce_template(self, assistant: AIAssistant, user_prompt: str):
         reduce_template = f"""
            Вы получили набор кратких резюме каждой части: 
            -> {'{docs}'}
            {assistant.assistant_prompt},
-           {assistant.user_prompt}
+           {assistant.user_prompt},
+           {user_prompt}
            Скомпилированный ответ:"""
         self.reduce_prompt = PromptTemplate.from_template(reduce_template)
 
@@ -86,14 +86,14 @@ class DocumentSummarizer(ISummarizer):
         docs = [Document(page_content=x) for x in text_splitter.split_text(text)]
         return docs
 
-    async def summarize(self, transcribed_text, assistant: AIAssistant):
-        self.setup_chains(assistant)
+    async def summarize(self, transcribed_text, assistant: AIAssistant, user_prompt: str):
+        self.setup_chains(assistant, user_prompt)
         self.setup_map_reduce_chain()
         split_docs = self.split_docs(text=transcribed_text)
         return self.map_reduce_chain.run(split_docs)
 
-    async def __call__(self, transcribed_text, assistant: AIAssistant):
-        task = asyncio.create_task(self.summarize(transcribed_text, assistant))
+    async def __call__(self, transcribed_text, assistant: AIAssistant, user_prompt: str):
+        task = asyncio.create_task(self.summarize(transcribed_text, assistant, user_prompt))
         return await task
 
 
@@ -103,10 +103,10 @@ class GptSummarizer(ISummarizer):
                  gpt_client: GPTClient):
         self.gpt_client = gpt_client
 
-    async def summarize(self, transcribed_text: str, assistant: AIAssistant) -> str:
+    async def summarize(self, transcribed_text: str, assistant: AIAssistant, user_prompt: str) -> str:
         try:
             messages: List[GPTMessage] = [
-                GPTMessage(role=GPTRole.USER, content=assistant.user_prompt + transcribed_text)]
+                GPTMessage(role=GPTRole.USER, content=assistant.user_prompt + user_prompt + transcribed_text)]
             system_message: GPTMessage = GPTMessage(role=GPTRole.SYSTEM, content=assistant.assistant_prompt)
             result = await self.gpt_client.complete(messages, system_message)
         except Exception as e:
@@ -114,5 +114,5 @@ class GptSummarizer(ISummarizer):
         else:
             return result
 
-    async def __call__(self, transcribed_text: str, assistant: AIAssistant) -> str:
-        return await self.summarize(transcribed_text, assistant)
+    async def __call__(self, transcribed_text: str, assistant: AIAssistant, user_prompt: str) -> str:
+        return await self.summarize(transcribed_text, assistant, user_prompt)

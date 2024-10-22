@@ -41,17 +41,18 @@ class Pipeline(ABC):
             file = await self.loader(pipeline_data.file_destination, temp_file_path)
             transcribed_text = await self.transcriber(file)
             logger.info(f"получен транскриби рованый текст для пользвоателя {pipeline_data.initiator_user_id}")
-            # текст не сохранился
+
             text_model = await self.save_transcribed_text(transcribed_text, pipeline_data)
             await self.publish_transcribed_text(text_model, pipeline_data)
-            # ассистенты не получены
+
             assistant = await self.repo.assistant_repository.get(assistant_id=pipeline_data.assistant_id)
-            # саммари нету
-            summary = await self.summarizer(transcribed_text=transcribed_text, assistant=assistant)
-            # саммари не сохранилось
+
+            summary = await self.summarizer(transcribed_text=transcribed_text, assistant=assistant,
+                                            user_prompt=pipeline_data.user_prompt)
+
             summary_text_model = await self.save_summary_text(summary=summary, pipeline_data=pipeline_data)
             await self.publish_summary_text(summary_text_model, pipeline_data)
-            # история не сохранилась
+
             await self.save_new_history(transcribe_id=int(text_model.id),
                                         summary_id=int(summary_text_model.id),
                                         pipeline_data=pipeline_data)
