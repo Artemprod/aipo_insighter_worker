@@ -46,7 +46,7 @@ class DocumentSummarizer(ISummarizer):
              {'{docs}'}
              {assistant.assistant_prompt},
              {assistant.user_prompt_for_chunks},
-             {user_prompt if user_prompt else " "}
+             {user_prompt if user_prompt is not None else " "}
            Убедитесь, что ваш анализ помогает восстановить контекст, если эта часть будет рассматриваться отдельно от других частей документа.
            Полезный ответ->:"""
         self.map_prompt = PromptTemplate.from_template(map_template)
@@ -57,7 +57,7 @@ class DocumentSummarizer(ISummarizer):
            -> {'{docs}'}
            {assistant.assistant_prompt},
            {assistant.user_prompt},
-           {user_prompt if user_prompt else " "}
+           {user_prompt if user_prompt is not None else " "}
            Скомпилированный ответ:"""
         self.reduce_prompt = PromptTemplate.from_template(reduce_template)
 
@@ -104,6 +104,7 @@ class GptSummarizer(ISummarizer):
         self.gpt_client = gpt_client
 
     async def summarize(self, transcribed_text: str, assistant: AIAssistant, user_prompt: str) -> str:
+        user_prompt = user_prompt if user_prompt is not None else " "
         try:
             messages: List[GPTMessage] = [
                 GPTMessage(role=GPTRole.USER, content=assistant.user_prompt + user_prompt + transcribed_text)]
