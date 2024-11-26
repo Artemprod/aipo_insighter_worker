@@ -92,13 +92,14 @@ def initialize_lang_chain_summarization(settings: ProjectSettings):
 
 
 def initialize_gpt_client(settings: ProjectSettings):
-    return GPTClient(options=GPTOptions(
-        api_key=settings.openai.openai_api_key,
-        model_name=settings.gpt.gpt_model_version,
-        max_message_count=settings.gpt.context_length,
-        temperature=settings.gpt.gpt_model_temperature,
-        max_return_tokens=settings.gpt.gpt_max_return_tokens
-    ))
+    return GPTClient(
+        options=GPTOptions(
+            host=settings.gpt.openai_host,
+            port=settings.gpt.openai_port,
+            api_prefix=settings.gpt.openai_api_prefix,
+            single_request_endpoint=settings.gpt.openai_single_request_endpoint
+        )
+    )
 
 
 def initialize_gpt_summarizer(settings: ProjectSettings):

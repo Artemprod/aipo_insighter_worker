@@ -24,9 +24,13 @@ class WhisperConfigs(BaseConfig):
 
 
 class GPTConfigs(BaseConfig):
+    openai_host: str
+    openai_port: int
+    openai_api_prefix: str
+    openai_single_request_endpoint: str
+
+    # use in DocumentSummarizer
     gpt_model_version: Optional[str] = '3.5-turbo'
-    gpt_model_temperature: Optional[float] = 1.00
-    context_length: Optional[int] = 1
     gpt_max_return_tokens: Optional[int] = 1
 
 

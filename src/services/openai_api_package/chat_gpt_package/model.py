@@ -1,15 +1,17 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Union
 
 
 @dataclass
 class GPTOptions:
-    api_key: str = field(repr=False)
-    model_name: str
-    max_message_count: Union[int, None]
-    temperature: float
-    max_return_tokens: int
+    host: str
+    port: int
+    api_prefix: str
+    single_request_endpoint: str
+
+    @property
+    def openai_url_single_request(self) -> str:
+        return f"http://{self.host}:{self.port}{self.api_prefix}{self.single_request_endpoint}"
 
 
 class GPTRole(str, Enum):
