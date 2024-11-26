@@ -2,7 +2,6 @@ import pytest
 
 from assemblyai.types import TranscriptionConfig
 
-
 from src.consumption.consumers.transcriber import AsyncWrappedAssemblyTranscriber
 from src.consumption.exeptions.trinscriber_exeptions import APITranscriptionError
 from src.services.assembly.client import AssemblyClient

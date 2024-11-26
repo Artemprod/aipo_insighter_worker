@@ -75,4 +75,3 @@ async def test_transcriber_without_speaker_labels():
     result = await transcriber.transcribe("mock_file_path")
     expected_result = "Speaker None: Hello, how are you?\n\nSpeaker None: I'm fine, thank you!\n\n"
     assert result == expected_result
-
