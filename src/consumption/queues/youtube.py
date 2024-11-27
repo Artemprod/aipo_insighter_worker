@@ -1,4 +1,4 @@
-from src.api.routers.main_process.schemas import StartFromYouTubeMessage
+from src.api.routers.main_process.schemas import StartFromYouTubeMessageScheme
 from src.pipelines.models import PiplineData
 from src.consumption.queues.base_processor import BaseProcessor
 
@@ -8,7 +8,7 @@ class YouTubeProcessor(BaseProcessor):
 
     @staticmethod
     def get_query_message(message):
-        return StartFromYouTubeMessage(**message)
+        return StartFromYouTubeMessageScheme(**message)
 
     @staticmethod
     def get_pipeline_data(query_message):

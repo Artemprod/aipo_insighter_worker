@@ -1,4 +1,4 @@
-from src.api.routers.main_process.schemas import StartFromS3
+from src.api.routers.main_process.schemas import StartFromS3Scheme
 from src.pipelines.models import PiplineData
 from src.consumption.queues.base_processor import BaseProcessor
 
@@ -7,7 +7,7 @@ class S3Processor(BaseProcessor):
     loader_key = 's3'
 
     def get_query_message(self, message):
-        return StartFromS3(**message)
+        return StartFromS3Scheme(**message)
 
     def get_pipeline_data(self, query_message):
         return PiplineData(

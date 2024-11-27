@@ -1,12 +1,10 @@
 from typing import Optional
-
 from pydantic import BaseModel, Field
 
 
-class StartFromYouTubeMessage(BaseModel):
+class BaseMessage(BaseModel):
     unique_id: str = Field()
     user_id: int = Field()
-    youtube_url: str = Field()
     assistant_id: int = Field()
     publisher_queue: str = Field()
     source: Optional[str] = None
@@ -14,38 +12,25 @@ class StartFromYouTubeMessage(BaseModel):
     description: Optional[str] = None
 
 
-class StartFromYouTubeErrorResponse(BaseModel):
-    user_id: int = Field()
+class StartFromYouTubeMessageScheme(BaseMessage):
     youtube_url: str = Field()
-    description: Optional[str] = None
 
 
-class StartFromStorageMessage(BaseModel):
-    unique_id: str = Field()
-    user_id: int = Field()
-    file_path: str = Field()
-    assistant_id: int = Field()
-    publisher_queue: str = Field()
-    storage_url: Optional[str] = None
-    source: Optional[str] = None
-    user_prompt: Optional[str] = None
-    description: Optional[str] = None
-
-
-class StartFromS3(BaseModel):
-    unique_id: str = Field()
-    user_id: int = Field()
+class StartFromS3Scheme(BaseMessage):
     s3_path: str = Field()
-    assistant_id: int = Field()
-    publisher_queue: str = Field()
     storage_url: Optional[str] = None
-    source: Optional[str] = None
-    user_prompt: Optional[str] = None
+
+
+# Не используются. Нужно ли их оставлять?
+class BaseErrorResponse(BaseModel):
+    user_id: int = Field()
     description: Optional[str] = None
 
 
-class StartFromStorageErrorResponse(BaseModel):
-    user_id: int = Field()
+class StartFromYouTubeErrorResponseScheme(BaseErrorResponse):
+    youtube_url: str = Field()
+
+
+class StartFromStorageErrorResponseScheme(BaseErrorResponse):
     file_path: str = Field()
     storage_url: Optional[str] = None
-    description: Optional[str] = None
