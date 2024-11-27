@@ -7,11 +7,11 @@ class YouTubeProcessor(BaseProcessor):
     loader_key = 'youtube'
 
     @staticmethod
-    def get_query_message(message):
+    def get_query_message(message: MessageType) -> StartFromYouTubeMessageScheme:
         return StartFromYouTubeMessageScheme(**message)
 
     @staticmethod
-    def get_pipeline_data(query_message):
+    def get_pipeline_data(query_message: BaseMessage) -> PiplineData:
         return PiplineData(
             unique_id=query_message.unique_id,
             initiator_user_id=query_message.user_id,

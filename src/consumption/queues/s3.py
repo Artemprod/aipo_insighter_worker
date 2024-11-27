@@ -6,10 +6,12 @@ from src.consumption.queues.base_processor import BaseProcessor
 class S3Processor(BaseProcessor):
     loader_key = 's3'
 
-    def get_query_message(self, message):
+    @staticmethod
+    def get_query_message(message: MessageType) -> StartFromS3Scheme:
         return StartFromS3Scheme(**message)
 
-    def get_pipeline_data(self, query_message):
+    @staticmethod
+    def get_pipeline_data(query_message: BaseMessage) -> PiplineData:
         return PiplineData(
             unique_id=query_message.unique_id,
             initiator_user_id=query_message.user_id,
