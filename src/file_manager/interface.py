@@ -5,9 +5,8 @@ from abc import ABC, abstractmethod
 class IBaseFileLoader(ABC):
 
     @abstractmethod
-    async def load(self, *args, **kwargs):
+    async def load(self, url, output_path):
         pass
 
-    @abstractmethod
-    async def __call__(self, *args, **kwargs):
-        pass
+    async def __call__(self, url, output_path) -> str:
+        return await self.load(url, output_path)

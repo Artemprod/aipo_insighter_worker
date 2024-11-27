@@ -1,6 +1,3 @@
-import asyncio
-import os
-
 from aiogram.client.session import aiohttp
 from loguru import logger
 
@@ -27,16 +24,3 @@ class S3FileLoader(IBaseFileLoader):
                             break
                         file.write(chunk)
                 logger.info(f"File downloaded to {destination_path}")
-
-    async def __call__(self, s3_url, destination_directory: str):
-        return await self.load(s3_url, destination_directory)
-
-
-# async def main():
-#     file_loader = S3FileLoader(
-#         'https://b8ffac09-9e42-4827-b4b2-22f1081ea55c.selstorage.ru/posting-label-58515541-0006-2.pdf')
-#     await file_loader.load()
-
-
-# if __name__ == '__main__':
-#     asyncio.run(main())
