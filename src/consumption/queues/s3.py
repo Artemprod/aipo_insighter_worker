@@ -1,4 +1,5 @@
-from src.api.routers.main_process.schemas import StartFromS3Scheme
+from src.api.routers.main_process.schemas import StartFromS3Scheme, BaseMessage
+from src.consumption.models.consumption.queues import MessageType
 from src.pipelines.models import PiplineData
 from src.consumption.queues.base_processor import BaseProcessor
 

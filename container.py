@@ -9,6 +9,7 @@ from src.consumption.consumers.transcriber import WhisperTranscriber, AssemblyTr
     AsyncWrappedAssemblyTranscriber
 from src.database.engine.session_maker import DatabaseSessionManager
 from src.database.repositories.storage_container import Repositories
+from src.file_manager.google_drive.google_drive_loader import GoogleDriveFileLoader
 from src.file_manager.s3.s3_file_loader import S3FileLoader
 from src.file_manager.utils.media_file_cropper import AsyncCropper
 from src.file_manager.youtube.youtube_file_loader import YouTubeFileLoader
@@ -38,6 +39,7 @@ class SystemComponents:
     redis: Any
     rabit_exchangers: dict
     rabit_consumers: dict
+    google_drive_loader: Any
 
 
 def initialize_asyncfile_cropper():
@@ -128,6 +130,10 @@ def rabit_consumers():
     return resolved_settings['consumers']
 
 
+def initialize_google_drive_loader():
+    return GoogleDriveFileLoader()
+
+
 def get_components(settings: ProjectSettings) -> SystemComponents:
     return SystemComponents(
         repositories_com=initialize_repositories_com(settings),
@@ -143,7 +149,7 @@ def get_components(settings: ProjectSettings) -> SystemComponents:
         redis=initialize_redis(settings),
         rabit_exchangers=rabit_exchangers(),
         rabit_consumers=rabit_consumers(),
-
+        google_drive_loader=initialize_google_drive_loader(),
     )
 
 
@@ -151,7 +157,8 @@ def create_commands(system_components: SystemComponents) -> Dict[str, Dict[str, 
     commands_container = {
         "loader": {
             'youtube': system_components.youtube_loader,
-            's3': system_components.s3_loader
+            's3': system_components.s3_loader,
+            'google_drive': system_components.google_drive_loader
         },
         "transcriber": {
             'whisper': system_components.whisper_transcriber,

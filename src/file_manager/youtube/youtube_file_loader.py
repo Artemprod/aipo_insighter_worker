@@ -7,7 +7,7 @@ from src.utils.wrappers import async_wrap
 class YouTubeFileLoader(IBaseFileLoader):
 
     @async_wrap
-    def load(self, youtube_url, output_path):
+    def load(self, youtube_url: str, output_path: str) -> str:
         yt = YouTube(youtube_url)
         audio_stream = yt.streams.get_audio_only()
         output_file = audio_stream.download(output_path=output_path)

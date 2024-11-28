@@ -6,8 +6,8 @@ from loguru import logger
 
 from container import settings
 from src.consumption.consumers.interface import ITranscriber, ISummarizer
+from src.consumption.models.consumption.asssistant import AIAssistant
 from src.consumption.models.publisher.triger import PublishTrigger
-from src.database.repositories.interface import IRepositoryContainer
 from src.database.repositories.storage_container import Repositories
 from src.file_manager.interface import IBaseFileLoader
 from src.pipelines.models import PiplineData
@@ -33,41 +33,42 @@ class Pipeline(ABC):
     async def run(self, pipeline_data: PiplineData) -> int | None:
         logger.info(f"Пайплайн запустился")
 
-        file_name = parse_path(path=pipeline_data.file_destination)
-        temp_file_path = create_temp_path(file_name=file_name,
-                                          user_id=pipeline_data.initiator_user_id)
-        file = await self.loader(pipeline_data.file_destination, temp_file_path)
-        transcribed_text = await self.transcriber(file)
-        if not transcribed_text:
-            logger.info("Нету транскрибированного текста")
-            return None
-
-        logger.info(f"получен транскриби рованый текст для пользвоателя {pipeline_data.initiator_user_id}")
-        text_model = await self.save_transcribed_text(transcribed_text, pipeline_data)
-        await self.publish_transcribed_text(text_model, pipeline_data)
-
+        file_path: str = await self.load_file(pipeline_data)
+        transcribed_text, transcribed_text_id = await self.transcribe_file(file_path, pipeline_data)
         assistant = await self.repo.assistant_repository.get(assistant_id=pipeline_data.assistant_id)
-        summary = await self.summarizer(transcribed_text=transcribed_text, assistant=assistant)
+        summary_id = await self.make_summary(transcribed_text, assistant, pipeline_data)
 
+        await self.save_new_history(
+            transcribe_id=transcribed_text_id,
+            summary_id=summary_id,
+            pipeline_data=pipeline_data
+        )
+        return 1
+
+    async def make_summary(self, transcribed_text: str, assistant: AIAssistant, pipeline_data: PiplineData) -> int:
+        summary = await self.summarizer(transcribed_text=transcribed_text, assistant=assistant)
         if not summary:
             logger.info("Нету саммари")
             return None
-
         summary_text_model = await self.save_summary_text(summary=summary, pipeline_data=pipeline_data)
         await self.publish_summary_text(summary_text_model, pipeline_data)
+        return int(summary_text_model.id)
 
-        await self.save_new_history(transcribe_id=int(text_model.id),
-                                        summary_id=int(summary_text_model.id),
-                                        pipeline_data=pipeline_data)
+    async def transcribe_file(self, file_path: str, pipeline_data: PiplineData) -> tuple[str, int]:
+        transcribed_text: str = await self.transcriber(file_path)
+        if not transcribed_text:
+            logger.info("Нету транскрибированного текста")
+            return None
+        logger.info(f"получен транскриби рованый текст для пользвоателя {pipeline_data.initiator_user_id}")
+        text_model = await self.save_transcribed_text(transcribed_text, pipeline_data)
+        await self.publish_transcribed_text(text_model, pipeline_data)
+        return transcribed_text, int(text_model.id)
 
-       
-        if temp_file_path:
-            clear_temp_dir(temp_file_path)
-            logger.info(f"очистил времмную папку {temp_file_path}")
-
-
-
-        return 1
+    async def load_file(self, pipeline_data: PiplineData) -> str:
+        file_name = parse_path(path=pipeline_data.file_destination)
+        temp_file_path = create_temp_path(file_name=file_name,
+                                          user_id=pipeline_data.initiator_user_id)
+        return await self.loader(pipeline_data.file_destination, temp_file_path)
 
     async def save_transcribed_text(self, transcribed_text: str, pipeline_data: PiplineData):
         logger.info(f"сохранил транскрибированый текст")
@@ -79,7 +80,6 @@ class Pipeline(ABC):
             transcription_time=datetime.now()
         )
 
-
     async def save_new_history(self, transcribe_id: int, summary_id: int, pipeline_data: PiplineData):
        logger.info(f"сохраняю новую историю")
        return await self.repo.history_repository.add_history(
@@ -88,13 +88,6 @@ class Pipeline(ABC):
               service_source=str(pipeline_data.service_source),
               summary_id=summary_id,
               transcribe_id=transcribe_id)
-        
-       
-         
-        
-
-
-
 
     @staticmethod
     async def publish_transcribed_text(text_model, pipeline_data: PiplineData):

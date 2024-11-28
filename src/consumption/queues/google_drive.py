@@ -1,15 +1,15 @@
-from src.api.routers.main_process.schemas import StartFromYouTubeMessageScheme, BaseMessage
+from src.api.routers.main_process.schemas import StartFromGoogleDriveScheme, BaseMessage
 from src.consumption.models.consumption.queues import MessageType
 from src.pipelines.models import PiplineData
 from src.consumption.queues.base_processor import BaseProcessor
 
 
-class YouTubeProcessor(BaseProcessor):
-    loader_key = 'youtube'
+class GoogleDriveProcessor(BaseProcessor):
+    loader_key = 'google_drive'
 
     @staticmethod
-    def get_query_message(message: MessageType) -> StartFromYouTubeMessageScheme:
-        return StartFromYouTubeMessageScheme(**message)
+    def get_query_message(message: MessageType) -> StartFromGoogleDriveScheme:
+        return StartFromGoogleDriveScheme(**message)
 
     @staticmethod
     def get_pipeline_data(query_message: BaseMessage) -> PiplineData:
@@ -19,5 +19,5 @@ class YouTubeProcessor(BaseProcessor):
             publisher_queue=query_message.publisher_queue,
             service_source=query_message.source,
             assistant_id=query_message.assistant_id,
-            file_destination=query_message.youtube_url,
+            file_destination=query_message.google_drive_url,
         )

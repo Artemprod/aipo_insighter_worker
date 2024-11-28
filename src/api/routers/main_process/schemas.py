@@ -21,9 +21,9 @@ class StartFromS3Scheme(BaseMessage):
     storage_url: Optional[str] = None
 
 
+class StartFromGoogleDriveScheme(BaseMessage):
+    google_drive_url: str
 
-class StartFromYouTubeMessageScheme(BaseMessage):
-    youtube_url: str
 
 # Не используются. Нужно ли их оставлять?
 class BaseErrorResponse(BaseModel):
