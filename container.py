@@ -12,7 +12,7 @@ from src.database.repositories.storage_container import Repositories
 from src.file_manager.google_drive.google_drive_loader import GoogleDriveFileLoader
 from src.file_manager.s3.s3_file_loader import S3FileLoader
 from src.file_manager.utils.media_file_cropper import AsyncCropper
-from src.file_manager.youtube.youtube_file_loader import YouTubeFileLoader
+from src.file_manager.youtube.youtube_file_loader import YouTubeFileLoader, DLYouTubeFileLoader
 from src.services.assembly.client import AssemblyClient, AsyncAssemblyClient
 from src.services.openai_api_package.chat_gpt_package.client import GPTClient
 from src.services.openai_api_package.chat_gpt_package.model import GPTOptions
@@ -74,7 +74,7 @@ def initialize_async_assembly_transcriber(settings: ProjectSettings):
 
 def initialize_async_wraped_assembly_transcriber(settings: ProjectSettings):
     client = AssemblyClient(api_key=settings.assembly.assembly_api_key)
-    config = TranscriptionConfig(language_code=settings.language, dual_channel=settings.assembly.speaker_label)
+    config = TranscriptionConfig(language_code=settings.language,  speaker_labels=settings.assembly.speaker_label,dual_channel=False,)
     return AsyncWrappedAssemblyTranscriber(client=client, config=config)
 
 
@@ -112,6 +112,9 @@ def initialize_gpt_summarizer(settings: ProjectSettings):
 def initialize_youtube_loader():
     return YouTubeFileLoader()
 
+def initialize_dl_youtube_loader():
+    return DLYouTubeFileLoader()
+
 
 def initialize_s3_loader():
     return S3FileLoader()
@@ -144,7 +147,7 @@ def get_components(settings: ProjectSettings) -> SystemComponents:
         whisper_transcriber=initialize_whisper_transcriber(settings),
         lang_chain_summarization=initialize_lang_chain_summarization(settings),
         gpt_summarizer=initialize_gpt_summarizer(settings),
-        youtube_loader=initialize_youtube_loader(),
+        youtube_loader=initialize_dl_youtube_loader(),
         s3_loader=initialize_s3_loader(),
         redis=initialize_redis(settings),
         rabit_exchangers=rabit_exchangers(),

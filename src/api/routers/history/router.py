@@ -27,12 +27,12 @@ async def get_user_history(user_id: int, request: Request):
 
 
 @history_router.get("/get_history_by_date")
-@cache(expire=60 * 10)
 async def get_user_history_by_date(user_id: int, date, request: Request):
     logger.info("user_id", user_id)
     try:
         history: list[HistoryResultDTO] = await request.app.repositories.history_repository.get_history_by_date(
             user_id=user_id, date=date)
+        logger.info(f"Проверка истории в API {history}")
         if history is not None:
             result = [i.to_dict() for i in history]
             return result
@@ -43,12 +43,11 @@ async def get_user_history_by_date(user_id: int, date, request: Request):
 
 
 @history_router.get("/check_history")
-@cache(expire=60 * 10)
 async def get_user_history_by_date(user_id: int, request: Request):
     logger.info("user_id", user_id)
     try:
         is_history = await request.app.repositories.history_repository.check_history(user_id=user_id)
-        print(is_history)
-        return {"is_history":is_history}
+        logger.info(f"Проверка ответа истории в API {is_history}")
+        return {"is_history": is_history}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
