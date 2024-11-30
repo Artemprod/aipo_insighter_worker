@@ -17,8 +17,7 @@ from src.file_manager.exceptions.youtube_loader import YoutubeAudioNotDownloaded
 from src.file_manager.interface import IBaseFileLoader
 from src.pipelines.models import PiplineData
 
-from src.utils.path_opertaions import create_temp_path, clear_temp_dir, is_youtube_url, \
-    create_s3_file_name, create_youtube_file_name
+from src.utils.path_opertaions import create_temp_path, clear_temp_dir, FileNameExtractor
 from src.utils.utils_exceptions import NoPath, NoYoutubeUrl
 
 
@@ -63,19 +62,14 @@ class Pipeline(ABC):
         return await self.loader(pipeline_data.file_destination, temp_file_path)
 
     @staticmethod
-    async def create_temp_file_path(pipeline_data: PiplineData):
+    async def create_temp_file_path(pipeline_data: PiplineData) -> str | None:
         temp_file_path = None
         try:
-
-            # если это не ютуб то cсоздаем имя файла из s3
-            if not is_youtube_url(pipeline_data.file_destination):
-                file_name = create_s3_file_name(path=pipeline_data.file_destination)
-            else:
-                file_name = create_youtube_file_name(youtube_url=pipeline_data.file_destination)
+            file_name = FileNameExtractor.extract_file_name_from_url(pipeline_data.file_destination)
 
             if file_name is not None:
-                temp_file_path = create_temp_path(file_name=file_name,
-                                                  user_id=pipeline_data.initiator_user_id)
+                temp_file_path = create_temp_path(file_name=file_name, user_id=pipeline_data.initiator_user_id)
+
         except Exception:
             raise
         else:
