@@ -10,18 +10,17 @@ from src.consumption.queues.base_processor import BaseProcessor
 from src.consumption.queues.google_drive import GoogleDriveProcessor
 from src.consumption.queues.s3 import S3Processor
 from src.consumption.queues.youtube import YouTubeProcessor
+from src.consumption.routers.exception_handler import error_callback
 
 process_router = RabbitRouter(prefix="")
 
 
 async def handle_message(msg: RabbitMessage, processor: Type[BaseProcessor], context: Context):
+    message = json.loads(msg.body.decode("utf-8"))
     task = asyncio.create_task(
-        processor.handle_message(
-            message=json.loads(msg.body.decode("utf-8")),
-            utils=context.utils
-        )
+        processor.handle_message(message=message, utils=context.utils)
     )
-    task.add_done_callback(lambda t: t.exception() if t.exception() else None)
+    task.add_done_callback(lambda _task: asyncio.create_task(error_callback(_task, message)))
     await asyncio.sleep(5)
     await msg.ack()
 

@@ -1,7 +1,5 @@
 import os
-import re
 
-from loguru import logger
 from pytube import YouTube
 from yt_dlp import YoutubeDL
 
@@ -19,7 +17,7 @@ class YouTubeFileLoader(IBaseFileLoader):
             audio_stream = yt.streams.get_audio_only()
             output_file = audio_stream.download(output_path=output_path)
         except Exception as e:
-            raise YoutubeAudioNotDownloaded(url=youtube_url, exception_info=e) from e
+            raise YoutubeAudioNotDownloaded(youtube_url, f"Произошла ошибка: не удалось скачать аудио с YouTube.")
         else:
             return os.path.normpath(output_file)
 
@@ -53,6 +51,6 @@ class DLYouTubeFileLoader(IBaseFileLoader):
         try:
             output_file = self.download_audio(youtube_url, output_path)
         except Exception as e:
-            raise YoutubeAudioNotDownloaded(url=youtube_url, exception_info=e) from e
+            raise YoutubeAudioNotDownloaded(youtube_url, f"Произошла ошибка: не удалось скачать аудио с YouTube")
         else:
             return os.path.normpath(output_file)

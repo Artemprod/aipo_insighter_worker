@@ -1,4 +1,3 @@
-import os
 import re
 import shutil
 import tempfile
@@ -20,7 +19,7 @@ def create_s3_file_name(path: str) -> str:
     """
 
     if not path:
-        raise NoPath(path)
+        raise NoPath(f'Не удалось извлечь путь до файла')
     clean_path = path.split('?')[0]
     file_name = Path(clean_path).name
     return file_name
@@ -35,7 +34,7 @@ def create_youtube_file_name(youtube_url: str) -> str:
     """
 
     if not youtube_url:
-        raise NoYoutubeUrl(youtube_url)
+        raise NoYoutubeUrl('Не удалось извлечь URL YouTube')
     return youtube_url.split('/')[-1]
 
 
@@ -54,6 +53,8 @@ def clear_temp_dir(path: str):
     """
     Удаляет временную директорию и все файлы в ней.
     """
+    if not path:
+        return
     if Path(path).is_file():
         path = Path(path).parent
     shutil.rmtree(path, ignore_errors=True)

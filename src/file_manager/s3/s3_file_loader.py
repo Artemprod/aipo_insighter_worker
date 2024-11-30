@@ -27,4 +27,4 @@ class S3FileLoader(IBaseFileLoader):
                             file.write(chunk)
                     logger.info(f"File downloaded to {destination_path}")
         except Exception as e:
-            raise S3FileNotDownloaded(url=url,exception_info=e) from e
+            raise S3FileNotDownloaded(url=url, exception_info=e)

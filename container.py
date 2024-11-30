@@ -4,7 +4,7 @@ from assemblyai import TranscriptionConfig
 from fastapi_cache.backends.redis import RedisBackend
 from project_configs.configs import ProjectSettings
 
-from src.consumption.consumers.summarizer import DocumentSummarizer, GptSummarizer
+from src.consumption.consumers.summarizer import GptSummarizer
 from src.consumption.consumers.transcriber import WhisperTranscriber, AssemblyTranscriber, CostumeAssemblyTranscriber, \
     AsyncWrappedAssemblyTranscriber
 from src.database.engine.session_maker import DatabaseSessionManager
@@ -32,7 +32,6 @@ class SystemComponents:
     assembly_client: Any
     assembly_transcriber: Any
     whisper_transcriber: Any
-    lang_chain_summarization: Any
     gpt_summarizer: Any
     youtube_loader: Any
     s3_loader: Any
@@ -88,11 +87,6 @@ def initialize_whisper_transcriber(settings: ProjectSettings):
     return WhisperTranscriber(whisper_client=client, file_cropper=cropper)
 
 
-def initialize_lang_chain_summarization(settings: ProjectSettings):
-    return DocumentSummarizer(model=settings.gpt.gpt_model_version,
-                              max_response_tokens=settings.gpt.gpt_max_return_tokens)
-
-
 def initialize_gpt_client(settings: ProjectSettings):
     return GPTClient(
         options=GPTOptions(
@@ -145,7 +139,6 @@ def get_components(settings: ProjectSettings) -> SystemComponents:
         assembly_client=initialize_assembly_client(settings),
         assembly_transcriber=initialize_async_wraped_assembly_transcriber(settings),
         whisper_transcriber=initialize_whisper_transcriber(settings),
-        lang_chain_summarization=initialize_lang_chain_summarization(settings),
         gpt_summarizer=initialize_gpt_summarizer(settings),
         youtube_loader=initialize_dl_youtube_loader(),
         s3_loader=initialize_s3_loader(),
@@ -169,7 +162,6 @@ def create_commands(system_components: SystemComponents) -> Dict[str, Dict[str, 
         },
         "summarizer": {
             'chat_gpt': system_components.gpt_summarizer,
-            'langchain': system_components.lang_chain_summarization
         },
 
     }

@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, BinaryIO, Union
+from typing import BinaryIO, Union
 
 from assemblyai.api import ENDPOINT_UPLOAD, ENDPOINT_TRANSCRIPT
 from src.consumption.consumers.interface import ITranscriber
@@ -13,13 +13,12 @@ from src.services.openai_api_package.whisper_package.whisper import WhisperClien
 import aiofiles
 from aiogram.client.session import aiohttp
 
-from assemblyai.types import TranscriptRequest, TranscriptResponse, TranscriptionConfig, TranscriptStatus, \
-    TranscriptError
+from assemblyai.types import TranscriptRequest, TranscriptResponse, TranscriptionConfig, TranscriptError
 
 from tenacity import retry, retry_if_exception_type, wait_fixed, stop_after_attempt
 
-from src.utils.data_utils import format_time, from_text, simple_from_text
-from src.utils.wrappers import async_wrap, async_timing_decorator
+from src.utils.data_utils import from_text, simple_from_text
+from src.utils.wrappers import async_wrap
 
 
 class WhisperTranscriber(ITranscriber):
@@ -37,7 +36,8 @@ class WhisperTranscriber(ITranscriber):
             # Соединяем результаты транскрипции в одну строку с учетом порядка файлов
             total_transcription = " ".join(result for result in results if isinstance(result, str))
         except Exception as e:
-            raise NoResponseWhisper(exception=e) from e
+            raise NoResponseWhisper(f"Произошла ошибка: API Whisper не предоставил распознанный текст. \n"
+                                    f"{str(e)}")
         else:
             return total_transcription
 
@@ -159,7 +159,8 @@ class AsyncWrappedAssemblyTranscriber(ITranscriber):
             transcript = self.client.Transcriber().transcribe(file_path, self.config)
             result = simple_from_text(response=transcript, speaker_labels=self.config.speaker_labels)
         except Exception as e:
-            raise NoResponseFromAssembly(exception=e) from e
+            raise NoResponseFromAssembly(f'Произошла ошибка: API Assembly не предоставил распознанный текст.\n'
+                                         f' {str(e)}')
         else:
             return result
 
