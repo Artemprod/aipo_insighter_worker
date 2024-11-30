@@ -12,6 +12,7 @@ from langchain_text_splitters import CharacterTextSplitter
 from abc import ABC, abstractmethod
 
 from src.consumption.consumers.interface import ISummarizer
+from src.consumption.exeptions.summarize import NoResponseFromChatGptSummarization
 from src.consumption.models.consumption.asssistant import AIAssistant
 from src.services.openai_api_package.chat_gpt_package.client import GPTClient
 from src.services.openai_api_package.chat_gpt_package.model import GPTMessage, GPTRole
