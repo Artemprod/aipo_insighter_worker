@@ -14,7 +14,6 @@ from src.file_manager.exceptions.s3 import S3FileNotDownloaded
 from src.file_manager.exceptions.youtube_loader import YoutubeAudioNotDownloaded
 from src.file_manager.interface import IBaseFileLoader
 from src.pipelines.models import PiplineData
-
 from src.utils.path_opertaions import create_temp_path, clear_temp_dir, is_youtube_url, \
     create_s3_file_name, create_youtube_file_name
 from src.utils.utils_exceptions import NoPath, NoYoutubeUrl
@@ -42,17 +41,18 @@ class Pipeline(ABC):
             file = await self.loader(pipeline_data.file_destination, temp_file_path)
             transcribed_text = await self.transcriber(file)
             logger.info(f"получен транскриби рованый текст для пользвоателя {pipeline_data.initiator_user_id}")
-            # текст не сохранился
+
             text_model = await self.save_transcribed_text(transcribed_text, pipeline_data)
             await self.publish_transcribed_text(text_model, pipeline_data)
-            # ассистенты не получены
+
             assistant = await self.repo.assistant_repository.get(assistant_id=pipeline_data.assistant_id)
-            # саммари нету
-            summary = await self.summarizer(transcribed_text=transcribed_text, assistant=assistant)
-            # саммари не сохранилось
+
+            summary = await self.summarizer(transcribed_text=transcribed_text, assistant=assistant,
+                                            user_prompt=pipeline_data.user_prompt)
+
             summary_text_model = await self.save_summary_text(summary=summary, pipeline_data=pipeline_data)
             await self.publish_summary_text(summary_text_model, pipeline_data)
-            # история не сохранилась
+
             await self.save_new_history(transcribe_id=int(text_model.id),
                                         summary_id=int(summary_text_model.id),
                                         pipeline_data=pipeline_data)
@@ -99,6 +99,39 @@ class Pipeline(ABC):
                 logger.info(f"Очистил временную папку {temp_file_path}")
             return 1
 
+    async def save_transcribed_text(self, transcribed_text: str, pipeline_data: PiplineData):
+        try:
+            result = await self.repo.transcribed_text_repository.save(
+                text=transcribed_text,
+                user_id=pipeline_data.initiator_user_id,
+                service_source=pipeline_data.service_source.value,
+                transcription_date=datetime.now(),
+                transcription_time=datetime.now()
+            )
+            logger.info(f"сохранил транскрибированый текст")
+            return result
+        except Exception as e:
+            logger.error(f"Ошибка при сохранении данных в бд {e}")
+            raise e
+
+    async def save_summary_text(self, summary: str, pipeline_data: PiplineData):
+        logger.info(f"сохраняю текст")
+        return await self.repo.summary_text_repository.save(
+            text=summary,
+            user_id=pipeline_data.initiator_user_id,
+            service_source=pipeline_data.service_source.value,
+            summary_date=datetime.now()
+        )
+
+    async def save_new_history(self, transcribe_id: int, summary_id: int, pipeline_data: PiplineData):
+        logger.info(f"сохраняю новую историю")
+        return await self.repo.history_repository.add_history(
+            user_id=int(pipeline_data.initiator_user_id),
+            unique_id=str(pipeline_data.unique_id),
+            service_source=str(pipeline_data.service_source.value),
+            summary_id=summary_id,
+            transcribe_id=transcribe_id)
+
     @staticmethod
     async def create_temp_file_path(pipeline_data: PiplineData):
         temp_file_path = None
@@ -116,29 +149,6 @@ class Pipeline(ABC):
             raise
         else:
             return temp_file_path
-
-    async def save_transcribed_text(self, transcribed_text: str, pipeline_data: PiplineData):
-        try:
-            result = await self.repo.transcribed_text_repository.save(
-                text=transcribed_text,
-                user_id=pipeline_data.initiator_user_id,
-                service_source=pipeline_data.service_source,
-                transcription_date=datetime.now(),
-                transcription_time=datetime.now()
-            )
-            logger.info(f"сохранил транскрибированый текст")
-            return result
-        except Exception as e:
-            raise e
-
-    async def save_new_history(self, transcribe_id: int, summary_id: int, pipeline_data: PiplineData):
-        logger.info(f"сохраняю новую историю")
-        return await self.repo.history_repository.add_history(
-            user_id=int(pipeline_data.initiator_user_id),
-            unique_id=str(pipeline_data.unique_id),
-            service_source=str(pipeline_data.service_source),
-            summary_id=summary_id,
-            transcribe_id=transcribe_id)
 
     @staticmethod
     async def publish_transcribed_text(text_model, pipeline_data: PiplineData):
@@ -174,12 +184,3 @@ class Pipeline(ABC):
 
             )
             logger.info("Отправил саммари")
-
-    async def save_summary_text(self, summary: str, pipeline_data: PiplineData):
-        logger.info(f"сохраняю текст")
-        return await self.repo.summary_text_repository.save(
-            text=summary,
-            user_id=pipeline_data.initiator_user_id,
-            service_source=pipeline_data.service_source,
-            summary_date=datetime.now()
-        )
