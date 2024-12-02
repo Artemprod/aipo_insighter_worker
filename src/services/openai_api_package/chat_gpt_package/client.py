@@ -14,8 +14,6 @@ class GPTClient:
     async def complete(self, user_message: str, system_message: str) -> str:
         async with self._lock:
             user_request = {
-                "user_prompt": user_message.content,
-                "system_prompt": system_message.content
                 "user_prompt": user_message,
                 "system_prompt": system_message
             }
