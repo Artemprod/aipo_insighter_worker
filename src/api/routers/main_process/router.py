@@ -37,8 +37,8 @@ async def start_task_from_youtube(message: StartFromYouTubeMessageScheme,
 
 
 @processes_router.post("/start_process_from_google_drive")
-async def start_task_from_youtube(message: StartFromGoogleDriveScheme,
-                                  request: Request):
+async def start_task_from_google_drive(message: StartFromGoogleDriveScheme,
+                                       request: Request):
     broker: RabbitBroker = request.app.state.broker
     await broker.publish(
         message=message.json().encode('utf-8'),

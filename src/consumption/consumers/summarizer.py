@@ -2,7 +2,6 @@ from src.consumption.consumers.interface import ISummarizer
 from src.consumption.exeptions.summarize import NoResponseFromChatGptSummarization
 from src.consumption.models.consumption.asssistant import AIAssistant
 from src.services.openai_api_package.chat_gpt_package.client import GPTClient
-from src.services.openai_api_package.chat_gpt_package.model import GPTMessage, GPTRole
 
 
 class GptSummarizer(ISummarizer):
@@ -12,9 +11,10 @@ class GptSummarizer(ISummarizer):
 
     async def summarize(self, transcribed_text: str, assistant: AIAssistant) -> str:
         try:
-            user_message = GPTMessage(role=GPTRole.USER, content=assistant.user_prompt + transcribed_text)
-            system_message = GPTMessage(role=GPTRole.SYSTEM, content=assistant.assistant_prompt)
-            return await self.gpt_client.complete(user_message, system_message)
+            return await self.gpt_client.complete(
+                user_message=f'{assistant.user_prompt} {transcribed_text}',
+                system_message=assistant.assistant_prompt
+            )
 
         except Exception as e:
             raise NoResponseFromChatGptSummarization(

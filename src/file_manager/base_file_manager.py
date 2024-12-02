@@ -22,11 +22,6 @@ class BaseFileManager(ABC):
         return temp_file_path
 
     @staticmethod
-    def _generate_random_file_name(length: int = 10) -> str:
-        characters = string.ascii_letters + string.digits
-        return ''.join(random.choice(characters) for _ in range(length))
-
-    @staticmethod
     def _create_temp_directory(file_name: str | None, user_id: int) -> str:
         logger.info("создаю временную директорию ...")
         user_id = str(user_id)

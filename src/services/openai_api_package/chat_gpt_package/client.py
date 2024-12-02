@@ -2,7 +2,7 @@ import asyncio
 
 from aiohttp import ClientSession, ClientTimeout
 
-from src.services.openai_api_package.chat_gpt_package.model import GPTMessage, GPTOptions
+from src.services.openai_api_package.chat_gpt_package.model import GPTOptions
 
 
 class GPTClient:
@@ -11,11 +11,13 @@ class GPTClient:
         self.options = options
         self._lock = asyncio.Lock()
 
-    async def complete(self, user_message: GPTMessage, system_message: GPTMessage) -> str:
+    async def complete(self, user_message: str, system_message: str) -> str:
         async with self._lock:
             user_request = {
                 "user_prompt": user_message.content,
                 "system_prompt": system_message.content
+                "user_prompt": user_message,
+                "system_prompt": system_message
             }
             return await self._request(user_request)
 

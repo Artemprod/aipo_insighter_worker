@@ -50,3 +50,4 @@ class BaseProcessor(ABC):
         if query_message := await cls.process_message(message):
             pipeline, pipeline_data = await cls.create_pipeline(query_message, utils)
             await cls.run_pipeline(pipeline, pipeline_data, message)
+        raise ValueError('Missing query message from message')
