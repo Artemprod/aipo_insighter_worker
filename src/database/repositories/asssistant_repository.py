@@ -1,8 +1,9 @@
 import datetime
-from typing import Optional, List
+from typing import List
 
 from sqlalchemy import select
 
+from src.api.routers.exceptions import NotFoundError
 from src.consumption.models.consumption.asssistant import AIAssistant
 from src.database.models.consumption.asssistant import AIAssistant as AIAssistantModel
 from src.database.repositories.base_repository import BaseRepository
@@ -38,7 +39,7 @@ class AssistantRepository(BaseRepository):
                 assistant_id=ai_assistant.assistant_id
             )
 
-    async def get(self, assistant_id: int) -> Optional[AIAssistant]:
+    async def get(self, assistant_id: int) -> AIAssistant:
         async with self.db_session_manager.session_scope() as session:
             query = select(AIAssistantModel).where(AIAssistantModel.assistant_id == assistant_id)
             results = await session.execute(query)
@@ -53,13 +54,15 @@ class AssistantRepository(BaseRepository):
                     created_at=result.created_at,
                     assistant_id=result.assistant_id
                 )
-            return None
+            raise NotFoundError(detail=f"Assistant with id {assistant_id} not found")
 
     async def get_all(self) -> List[AIAssistant]:
         async with self.db_session_manager.session_scope() as session:
             query = select(AIAssistantModel)
             results = await session.execute(query)
             all_results = results.scalars().all()
+            if not all_results:
+                raise NotFoundError(detail="Assistants not found")
             return [
                 AIAssistant(
                     assistant=result.assistant,

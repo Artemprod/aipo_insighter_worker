@@ -23,3 +23,16 @@ class StartFromS3Scheme(BaseMessage):
 
 class StartFromGoogleDriveScheme(BaseMessage):
     google_drive_url: str
+
+
+def get_responses(source: str):
+    return {
+        500: {
+            "description": "Internal server error",
+            "content": {
+                "application/json": {
+                    "example": {"detail": f"An error occurred while starting the process from {source}"}
+                }
+            }
+        }
+    }
