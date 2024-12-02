@@ -7,13 +7,12 @@ from pathlib import Path
 
 from loguru import logger
 
-from src.file_manager.types import FilePath
 from src.pipelines.models import PiplineData
 
 
 # Базовый класс для операций с файлами
 class BaseFileManager(ABC):
-    async def start_load(self, pipeline_data: PiplineData) -> FilePath:
+    async def start_load(self, pipeline_data: PiplineData) -> str:
         output_path =  self._create_temp_file_path(pipeline_data)
         return await self._load(url=pipeline_data.file_destination, output_path=output_path)
 

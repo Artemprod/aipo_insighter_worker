@@ -4,7 +4,6 @@ from pathlib import Path
 
 from src.file_manager.exceptions.s3 import  S3FileNotDownloaded
 from src.file_manager.base_file_manager import BaseFileManager
-from src.file_manager.types import FilePath
 from src.utils.utils_exceptions import NoPath
 
 
@@ -12,7 +11,7 @@ class S3FileManager(BaseFileManager):
     def __init__(self):
         pass
 
-    async def _load(self, url: str, output_path: str) -> FilePath:
+    async def _load(self, url: str, output_path: str) -> str:
         await self.download_file_from_url(url, destination_path=output_path)
         return output_path
 

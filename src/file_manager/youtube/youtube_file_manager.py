@@ -5,7 +5,6 @@ from yt_dlp import YoutubeDL
 
 from src.file_manager.exceptions.youtube_loader import YoutubeAudioNotDownloaded
 from src.file_manager.base_file_manager import BaseFileManager
-from src.file_manager.types import FilePath
 from src.utils.utils_exceptions import NoPath
 from src.utils.wrappers import async_wrap
 
@@ -13,7 +12,7 @@ from src.utils.wrappers import async_wrap
 class YouTubeFileManager(BaseFileManager):
 
     @async_wrap
-    def _load(self, url: str, output_path: str) -> FilePath:
+    def _load(self, url: str, output_path: str) -> str:
         try:
             yt = YouTube(url)
             audio_stream = yt.streams.get_audio_only()
@@ -54,7 +53,7 @@ class DLYouTubeFileManager(BaseFileManager):
                 raise YoutubeAudioNotDownloaded(url, "Download failed")
 
     @async_wrap
-    def _load(self, url: str, output_path: str) -> FilePath:
+    def _load(self, url: str, output_path: str) -> str:
         try:
             output_file = self.download_audio(url, output_path)
         except Exception:

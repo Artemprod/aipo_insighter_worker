@@ -4,7 +4,6 @@ from faststream.nats import NatsBroker
 from loguru import logger
 
 from container import settings
-from src.file_manager.types import FilePath
 from src.consumption.consumers.interface import ITranscriber, ISummarizer
 from src.consumption.models.publisher.triger import ErrorMessage
 from src.consumption.models.consumption.asssistant import AIAssistant
@@ -34,7 +33,7 @@ class Pipeline(ABC):
         temp_file_path = None
 
         try:
-            temp_file_path: FilePath = await self.loader.start_load(pipeline_data)
+            temp_file_path: str = await self.loader.start_load(pipeline_data)
             transcribed_text, transcribed_text_id = await self.transcribe_file(temp_file_path, pipeline_data)
             assistant = await self.repo.assistant_repository.get(assistant_id=pipeline_data.assistant_id)
             summary_id = await self.make_summary(transcribed_text, assistant, pipeline_data)
