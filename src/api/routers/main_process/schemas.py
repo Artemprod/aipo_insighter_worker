@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class BaseMessage(BaseModel):
@@ -23,18 +23,3 @@ class StartFromS3Scheme(BaseMessage):
 
 class StartFromGoogleDriveScheme(BaseMessage):
     google_drive_url: str
-
-
-# Не используются. Нужно ли их оставлять?
-class BaseErrorResponse(BaseModel):
-    user_id: int
-    description: Optional[str] = None
-
-
-class StartFromYouTubeErrorResponseScheme(BaseErrorResponse):
-    youtube_url: str
-
-
-class StartFromStorageErrorResponseScheme(BaseErrorResponse):
-    file_path: str
-    storage_url: Optional[str] = None

@@ -23,6 +23,5 @@ async def publish_error(error: str, description: str, message: dict):
         await broker.publish(
             message=ErrorMessage(error=error, description=description, user_id=message.get("user_id")),
             subject=f"{message.get('publisher_queue')}.error",
-
         )
         logger.info("Отправил сообщение об ошибке")

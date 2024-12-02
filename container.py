@@ -9,10 +9,10 @@ from src.consumption.consumers.transcriber import WhisperTranscriber, AssemblyTr
     AsyncWrappedAssemblyTranscriber
 from src.database.engine.session_maker import DatabaseSessionManager
 from src.database.repositories.storage_container import Repositories
-from src.file_manager.google_drive.google_drive_loader import GoogleDriveFileLoader
-from src.file_manager.s3.s3_file_loader import S3FileLoader
+from src.file_manager.google_drive.google_drive_file_manager import GoogleDriveFileManager
+from src.file_manager.s3.s3_file_manager import S3FileManager
 from src.file_manager.utils.media_file_cropper import AsyncCropper
-from src.file_manager.youtube.youtube_file_loader import YouTubeFileLoader, DLYouTubeFileLoader
+from src.file_manager.youtube.youtube_file_manager import YouTubeFileManager, DLYouTubeFileManager
 from src.services.assembly.client import AssemblyClient, AsyncAssemblyClient
 from src.services.openai_api_package.chat_gpt_package.client import GPTClient
 from src.services.openai_api_package.chat_gpt_package.model import GPTOptions
@@ -103,15 +103,16 @@ def initialize_gpt_summarizer(settings: ProjectSettings):
     return GptSummarizer(gpt_client=client)
 
 
-def initialize_youtube_loader():
-    return YouTubeFileLoader()
-
-def initialize_dl_youtube_loader():
-    return DLYouTubeFileLoader()
+def initialize_youtube_file_manager():
+    return YouTubeFileManager()
 
 
-def initialize_s3_loader():
-    return S3FileLoader()
+def initialize_dl_youtube_file_manager():
+    return DLYouTubeFileManager()
+
+
+def initialize_s3_file_manager():
+    return S3FileManager()
 
 
 def initialize_redis(settings: ProjectSettings):
@@ -127,8 +128,8 @@ def rabit_consumers():
     return resolved_settings['consumers']
 
 
-def initialize_google_drive_loader():
-    return GoogleDriveFileLoader()
+def initialize_google_drive_file_manager():
+    return GoogleDriveFileManager()
 
 
 def get_components(settings: ProjectSettings) -> SystemComponents:
@@ -140,12 +141,12 @@ def get_components(settings: ProjectSettings) -> SystemComponents:
         assembly_transcriber=initialize_async_wraped_assembly_transcriber(settings),
         whisper_transcriber=initialize_whisper_transcriber(settings),
         gpt_summarizer=initialize_gpt_summarizer(settings),
-        youtube_loader=initialize_dl_youtube_loader(),
-        s3_loader=initialize_s3_loader(),
+        youtube_loader=initialize_dl_youtube_file_manager(),
+        s3_loader=initialize_s3_file_manager(),
         redis=initialize_redis(settings),
         rabit_exchangers=rabit_exchangers(),
         rabit_consumers=rabit_consumers(),
-        google_drive_loader=initialize_google_drive_loader(),
+        google_drive_loader=initialize_google_drive_file_manager(),
     )
 
 
@@ -163,7 +164,6 @@ def create_commands(system_components: SystemComponents) -> Dict[str, Dict[str, 
         "summarizer": {
             'chat_gpt': system_components.gpt_summarizer,
         },
-
     }
     return commands_container
 
