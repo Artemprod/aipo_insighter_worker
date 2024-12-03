@@ -16,12 +16,13 @@ from src.pipelines.models import PiplineData
 class Pipeline(ABC):
     temp_history_date = {}
 
-    def __init__(self,
-                 repo: Repositories,
-                 loader: BaseFileManager,
-                 transcriber: ITranscriber,
-                 summarizer: ISummarizer,
-                 ):
+    def __init__(
+            self,
+            repo: Repositories,
+            loader: BaseFileManager,
+            transcriber: ITranscriber,
+            summarizer: ISummarizer,
+    ):
 
         self.repo = repo
         self.loader = loader
@@ -53,7 +54,7 @@ class Pipeline(ABC):
 
     async def transcribe_file(self, file_path: str, pipeline_data: PiplineData) -> tuple[str, int]:
         transcribed_text: str = await self.transcriber(file_path)
-        logger.info(f"получен транскриби рованый текст для пользвоателя {pipeline_data.initiator_user_id}")
+        logger.info(f"получен транскрибированый текст для пользователя {pipeline_data.initiator_user_id}")
         text_model = await self.save_transcribed_text(transcribed_text, pipeline_data)
         await self.publish_transcribed_text(text_model, pipeline_data)
         return transcribed_text, int(text_model.id)
