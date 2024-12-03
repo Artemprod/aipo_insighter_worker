@@ -29,15 +29,7 @@ class AssistantRepository(BaseRepository):
             )
             session.add(ai_assistant)
             await session.commit()
-            return AIAssistant(
-                assistant=assistant,
-                name=name,
-                assistant_prompt=assistant_prompt,
-                user_prompt=user_prompt,
-                user_prompt_for_chunks=user_prompt_for_chunks,
-                created_at=created_at,
-                assistant_id=ai_assistant.assistant_id
-            )
+            return AIAssistant.model_validate(ai_assistant)
 
     async def get(self, assistant_id: int) -> AIAssistant:
         async with self.db_session_manager.session_scope() as session:
@@ -45,15 +37,7 @@ class AssistantRepository(BaseRepository):
             results = await session.execute(query)
             result = results.scalars().first()
             if result:
-                return AIAssistant(
-                    assistant=result.assistant,
-                    name=result.name,
-                    assistant_prompt=result.assistant_prompt,
-                    user_prompt=result.user_prompt,
-                    user_prompt_for_chunks=result.user_prompt_for_chunks,
-                    created_at=result.created_at,
-                    assistant_id=result.assistant_id
-                )
+                return AIAssistant.model_validate(result)
             raise NotFoundError(detail=f"Assistant with id {assistant_id} not found")
 
     async def get_all(self) -> List[AIAssistant]:
@@ -63,17 +47,7 @@ class AssistantRepository(BaseRepository):
             all_results = results.scalars().all()
             if not all_results:
                 raise NotFoundError(detail="Assistants not found")
-            return [
-                AIAssistant(
-                    assistant=result.assistant,
-                    name=result.name,
-                    assistant_prompt=result.assistant_prompt,
-                    user_prompt=result.user_prompt,
-                    user_prompt_for_chunks=result.user_prompt_for_chunks,
-                    created_at=result.created_at,
-                    assistant_id=result.assistant_id
-                ) for result in all_results
-            ]
+            return [AIAssistant.model_validate(result) for result in all_results]
 
     # TODO Под вопросом стоит ли передовать объект или так же сделать передачу данных в функцию
     async def update(self, ai_assistant: AIAssistant) -> bool:

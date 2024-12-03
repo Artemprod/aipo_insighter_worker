@@ -27,7 +27,7 @@ class TranscribedTextRepository(BaseRepository):
             session.add(transcribed_text)
             await session.commit()
 
-            return TranscribedText(**transcribed_text.to_dict())
+            return TranscribedText.model_validate(transcribed_text)
 
     async def get(self, text_id: int) -> TranscribedText:
         async with self.db_session_manager.session_scope() as session:
@@ -35,7 +35,7 @@ class TranscribedTextRepository(BaseRepository):
             results = await session.execute(query)
             result = results.scalars().first()  # Получаем первый объект из результатов запроса
             if result:
-                return TranscribedText(**result.to_dict())
+                return TranscribedText.model_validate(result)
             raise NotFoundError(detail=f"Transcribed text with id {text_id} not found")
 
     async def delete(self, text_id: int) -> bool:

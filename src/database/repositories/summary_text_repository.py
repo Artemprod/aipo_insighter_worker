@@ -25,7 +25,7 @@ class SummaryTextRepository(BaseRepository):
             session.add(summary_text)
             await session.commit()
 
-            return SummaryText(**summary_text.to_dict())
+            return SummaryText.model_validate(summary_text)
 
     async def get(self, text_id: int) -> SummaryText:
         async with self.db_session_manager.session_scope() as session:
@@ -33,7 +33,7 @@ class SummaryTextRepository(BaseRepository):
             results = await session.execute(query)
             result = results.scalars().first()
             if result:
-                return SummaryText(**result.to_dict())
+                return SummaryText.model_validate(result)
             raise NotFoundError(detail=f"Transcribed text with id {text_id} not found")
 
     async def delete(self, text_id: int):
