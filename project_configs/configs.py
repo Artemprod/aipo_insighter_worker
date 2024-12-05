@@ -18,11 +18,6 @@ class UvicornServer(BaseConfig):
     uvicorn_host: str = "0.0.0.0"
 
 
-class WhisperConfigs(BaseConfig):
-    whisper_model_version: str = 'whisper-1'
-    whisper_model_temperature: str = '0.8'
-
-
 class GPTConfigs(BaseConfig):
     openai_host: str
     openai_port: int
@@ -32,6 +27,8 @@ class GPTConfigs(BaseConfig):
     # use in DocumentSummarizer
     gpt_model_version: Optional[str] = '3.5-turbo'
     gpt_max_return_tokens: Optional[int] = 1
+
+
 
 
 class AssemblyConfigs(BaseConfig):
@@ -86,7 +83,6 @@ class SentryConfigs(BaseConfig):
 
 class ProjectSettings(BaseConfig):
     language: str = 'ru'
-    whisper: WhisperConfigs = Field(default_factory=WhisperConfigs)
     uvicorn_server: UvicornServer = Field(default_factory=UvicornServer)
     gpt: GPTConfigs = Field(default_factory=GPTConfigs)
     assembly: AssemblyConfigs = Field(default_factory=AssemblyConfigs)

@@ -1,33 +1,34 @@
 import os
-import re
 
-from loguru import logger
 from pytube import YouTube
 from yt_dlp import YoutubeDL
 
 from src.file_manager.exceptions.youtube_loader import YoutubeAudioNotDownloaded
-from src.file_manager.interface import IBaseFileLoader
+from src.file_manager.base_file_manager import BaseFileManager
+from src.utils.utils_exceptions import NoPath
 from src.utils.wrappers import async_wrap
 
 
-class YouTubeFileLoader(IBaseFileLoader):
+class YouTubeFileManager(BaseFileManager):
 
     @async_wrap
-    def load(self, youtube_url, output_path):
+    def _load(self, url: str, output_path: str) -> str:
         try:
-            yt = YouTube(youtube_url)
+            yt = YouTube(url)
             audio_stream = yt.streams.get_audio_only()
             output_file = audio_stream.download(output_path=output_path)
-        except Exception as e:
-            raise YoutubeAudioNotDownloaded(url=youtube_url, exception_info=e) from e
+        except Exception:
+            raise YoutubeAudioNotDownloaded(url, "Произошла ошибка: не удалось скачать аудио с YouTube.")
         else:
             return os.path.normpath(output_file)
 
-    async def __call__(self, youtube_url, output_path) -> str:
-        return await self.load(youtube_url, output_path)
+    def _extract_file_name_from_url(self, url: str) -> str:
+        if not str:
+            raise NoPath('Не удалось извлечь путь до файла')
+        return str.split('/')[-1]
 
 
-class DLYouTubeFileLoader(IBaseFileLoader):
+class DLYouTubeFileManager(BaseFileManager):
 
     def __init__(self):
         self.ydl_opts = {
@@ -52,13 +53,15 @@ class DLYouTubeFileLoader(IBaseFileLoader):
                 raise YoutubeAudioNotDownloaded(url, "Download failed")
 
     @async_wrap
-    def load(self, youtube_url, output_path):
+    def _load(self, url: str, output_path: str) -> str:
         try:
-            output_file = self.download_audio(youtube_url, output_path)
-        except Exception as e:
-            raise YoutubeAudioNotDownloaded(url=youtube_url, exception_info=e) from e
+            output_file = self.download_audio(url, output_path)
+        except Exception:
+            raise YoutubeAudioNotDownloaded(url, "Произошла ошибка: не удалось скачать аудио с YouTube")
         else:
             return os.path.normpath(output_file)
 
-    async def __call__(self, youtube_url, output_path) -> str:
-        return await self.load(youtube_url, output_path)
+    def _extract_file_name_from_url(self, url: str) -> str | None:
+        if not url:
+            raise NoPath('Не удалось извлечь путь до файла')
+        return url.split('/')[-1]

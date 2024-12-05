@@ -1,8 +1,11 @@
 from loguru import logger
 from fastapi import APIRouter, HTTPException
 from starlette.requests import Request
+
+from src.api.routers.exceptions import NotFoundError, ErrorMessage
+from src.api.routers.history.schemas import UserHistoryScheme
 from src.consumption.models.consumption.history import HistoryResultDTO
-from fastapi_cache.decorator import cache
+
 
 history_router = APIRouter(
     prefix='/history',
@@ -10,43 +13,61 @@ history_router = APIRouter(
 )
 
 
-@history_router.get("/get_history")
-async def get_user_history(user_id: int, request: Request):
-    logger.info("user_id", user_id)
+@history_router.get(
+    "/get_history",
+    responses={
+        404: {"model": ErrorMessage},
+        500: {"model": ErrorMessage}
+    }
+)
+async def get_user_history(
+        user_id: int,
+        request: Request
+) -> list[HistoryResultDTO]:
     try:
-        history: list[HistoryResultDTO] = await request.app.repositories.history_repository.get_history_by_user_id(
-            user_id=user_id)
-        if history is not None:
-            result = [i.to_dict() for i in history]
-            return result
-        else:
-            raise HTTPException(status_code=404, detail="History not found")
+        return await request.app.repositories.history_repository.get_history_by_user_id(user_id=user_id)
+    except NotFoundError:
+        raise
     except Exception as e:
+        logger.exception(f"An error occurred when getting history with user_id {user_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
-@history_router.get("/get_history_by_date")
-async def get_user_history_by_date(user_id: int, date, request: Request):
-    logger.info("user_id", user_id)
+@history_router.get(
+    "/get_history_by_date",
+    responses={
+        404: {"model": ErrorMessage},
+        500: {"model": ErrorMessage}
+    }
+)
+async def get_user_history_by_date(
+        user_id: int,
+        date: str,
+        request: Request
+) -> list[HistoryResultDTO]:
     try:
-        history: list[HistoryResultDTO] = await request.app.repositories.history_repository.get_history_by_date(
-            user_id=user_id, date=date)
-        logger.info(f"Проверка истории в API {history}")
-        if history is not None:
-            result = [i.to_dict() for i in history]
-            return result
-        else:
-            raise HTTPException(status_code=404, detail=f"History with this date: {date} not found")
+        return await request.app.repositories.history_repository.get_history_by_date(user_id=user_id, date=date)
+    except NotFoundError:
+        raise
     except Exception as e:
+        logger.exception(f"An error occurred when getting history by date {date} with user_id {user_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
-@history_router.get("/check_history")
-async def get_user_history_by_date(user_id: int, request: Request):
-    logger.info("user_id", user_id)
+@history_router.get(
+    "/check_history",
+    responses={
+        500: {"model": ErrorMessage}
+    }
+)
+async def check_user_history(
+        user_id: int,
+        request: Request
+) -> UserHistoryScheme:
     try:
-        is_history = await request.app.repositories.history_repository.check_history(user_id=user_id)
-        logger.info(f"Проверка ответа истории в API {is_history}")
-        return {"is_history": is_history}
+        return UserHistoryScheme(
+            is_history=await request.app.repositories.history_repository.check_history(user_id=user_id)
+        )
     except Exception as e:
+        logger.exception(f"An error occurred when check user history with user_id {user_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
