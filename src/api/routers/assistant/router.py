@@ -6,7 +6,7 @@ from starlette.requests import Request
 from fastapi_cache.decorator import cache
 
 from src.api.routers.exceptions import NotFoundError, ErrorMessage
-from src.consumption.models.consumption.asssistant import AIAssistant
+from src.consumption.models.consumption.asssistant import AIAssistantScheme
 
 assistant_router = APIRouter(
     prefix="/assistants",
@@ -22,7 +22,7 @@ assistant_router = APIRouter(
     }
 )
 @cache(expire=60)
-async def get_all_assistants(request: Request) -> list[AIAssistant]:
+async def get_all_assistants(request: Request) -> list[AIAssistantScheme]:
     try:
         return await request.app.repositories.assistant_repository.get_all()
     except NotFoundError:
@@ -43,7 +43,7 @@ async def get_all_assistants(request: Request) -> list[AIAssistant]:
 async def get_one_assistant(
         request: Request,
         assistant_id: int
-) -> AIAssistant:
+) -> AIAssistantScheme:
     try:
         return await request.app.repositories.assistant_repository.get(assistant_id=assistant_id)
     except NotFoundError:

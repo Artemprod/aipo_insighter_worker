@@ -6,7 +6,7 @@ from loguru import logger
 from container import settings
 from src.consumption.consumers.interface import ITranscriber, ISummarizer
 from src.consumption.models.publisher.triger import ErrorMessage
-from src.consumption.models.consumption.asssistant import AIAssistant
+from src.consumption.models.consumption.asssistant import AIAssistantScheme
 from src.consumption.models.publisher.triger import PublishTrigger
 from src.database.repositories.storage_container import Repositories
 from src.file_manager.base_file_manager import BaseFileManager
@@ -59,7 +59,7 @@ class Pipeline(ABC):
         await self.publish_transcribed_text(text_model, pipeline_data)
         return transcribed_text, int(text_model.id)
 
-    async def make_summary(self, transcribed_text: str, assistant: AIAssistant, pipeline_data: PiplineData) -> int:
+    async def make_summary(self, transcribed_text: str, assistant: AIAssistantScheme, pipeline_data: PiplineData) -> int:
         summary = await self.summarizer(transcribed_text=transcribed_text, assistant=assistant)
         summary_text_model = await self.save_summary_text(summary=summary, pipeline_data=pipeline_data)
         await self.publish_summary_text(summary_text_model, pipeline_data)

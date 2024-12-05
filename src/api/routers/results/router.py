@@ -4,7 +4,7 @@ from loguru import logger
 from starlette.requests import Request
 
 from src.api.routers.exceptions import NotFoundError, ErrorMessage
-from src.consumption.models.consumption.summarization import SummaryText
+from src.consumption.models.consumption.summarization import SummaryTextScheme
 from src.consumption.models.consumption.transcribition import TranscribedText
 from src.database.repositories.base_repository import BaseRepository
 
@@ -58,7 +58,7 @@ async def get_transcribed_text_from_database(
 async def get_summary_text_from_database(
         id_text: int,
         request: Request
-) -> SummaryText:
+) -> SummaryTextScheme:
     return await get_text_from_repository(
         repository=request.app.repositories.summary_text_repository,
         text_id=id_text,

@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class AIAssistant(BaseModel):
+class AIAssistantScheme(BaseModel):
     assistant: str
     name: str
     assistant_prompt: str
