@@ -1,8 +1,11 @@
 import datetime
 from typing import Optional, List
+
+from loguru import logger
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.api.routers.exceptions import NotFoundError
 from src.consumption.models.consumption.history import HistoryDTO, HistoryResultDTO
 from src.database.models.consumption.history import HistoryModel
 from src.database.models.consumption.summarization import SummaryTexts
@@ -50,10 +53,11 @@ class HistoryRepository(BaseRepository):
             query = select(HistoryModel).filter(HistoryModel.user_id==user_id)
             result = await session.execute(query)
             record = result.scalars().all()
+            logger.info(f"Проверка ответа истории {len(record) > 0}")
             return len(record) > 0
 
 
-    async def get_history_by_user_id(self, user_id: int) -> list[HistoryResultDTO] | None:
+    async def get_history_by_user_id(self, user_id: int) -> list[HistoryResultDTO]:
         async with self.db_session_manager.session_scope() as session:
             query = select(HistoryModel, SummaryTexts, TranscribedTexts).select_from(HistoryModel). \
                 join(SummaryTexts, HistoryModel.summary_id == SummaryTexts.id). \
@@ -63,7 +67,7 @@ class HistoryRepository(BaseRepository):
             result = await session.execute(query)
             records = result.fetchall()
             if not records:
-                return None
+                raise NotFoundError(detail=f"History with user id {user_id} not found")
 
             history_results = []
             for record in records:
@@ -81,7 +85,7 @@ class HistoryRepository(BaseRepository):
                 history_results.append(history_result)
             return history_results
 
-    async def get_history_by_date(self, user_id: int, date:str) -> list[HistoryResultDTO] | None:
+    async def get_history_by_date(self, user_id: int, date:str) -> list[HistoryResultDTO]:
         async with self.db_session_manager.session_scope() as session:
             query = select(HistoryModel, SummaryTexts, TranscribedTexts).select_from(HistoryModel). \
                 join(SummaryTexts, HistoryModel.summary_id == SummaryTexts.id). \
@@ -92,7 +96,7 @@ class HistoryRepository(BaseRepository):
             result = await session.execute(query)
             records = result.fetchall()
             if not records:
-                return None
+                raise NotFoundError(detail=f"History with user id {user_id} and date {date} not found")
 
             history_results = []
             for record in records:

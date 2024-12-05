@@ -1,10 +1,10 @@
-from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+from pydantic import BaseModel
 
-@dataclass
-class TranscribedText:
+
+class TranscribedText(BaseModel):
     text: str
     user_id: int
     service_source: str
@@ -12,3 +12,5 @@ class TranscribedText:
     transcription_time: datetime
     id: Optional[int] = None
 
+    class Config:
+        from_attributes = True
