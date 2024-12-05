@@ -5,6 +5,7 @@ exchangers:
     queues:
       - "youtube"  # Очередь для обработки данных YouTube
       - "storage"  # Очередь для обработки данных storage
+      - "google_drive"
 
 consumers:
   youtube_consumer:
@@ -16,4 +17,9 @@ consumers:
     exchanger: "exchangers.process_exchanger"  # Ссылка на обменник из секции exchangers
     queue: "storage"  # Очередь, которую будет обрабатывать consumer
     routing_key: "storage"  # Ключ маршрутизации для обменника
+
+  google_drive_consumer:
+    exchanger: "exchangers.process_exchanger"  # Ссылка на обменник из секции exchangers
+    queue: "google_drive"  # Очередь, которую будет обрабатывать consumer
+    routing_key: "google_drive"  # Ключ маршрутизации для обменника
 
