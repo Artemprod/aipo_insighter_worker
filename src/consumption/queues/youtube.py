@@ -20,4 +20,5 @@ class YouTubeProcessor(BaseProcessor):
             service_source=query_message.source,
             assistant_id=query_message.assistant_id,
             file_destination=query_message.youtube_url,
+            user_prompt=query_message.user_prompt,
         )

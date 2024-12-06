@@ -17,18 +17,22 @@ services:
     networks:
       - local_test
 
-  migration:
-    image: docker.io/artemprod/insighter_worker:sha-1dce951
-    container_name: migration_alembic
-    depends_on:
-      - postgres_db
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: "${POSTGRES_URL}"
-    command: ["/bin/sh", "/app/deploy/local/database_migration/migration.sh"]
-    networks:
-      - local_test
+#  migration:
+#    build:
+#      dockerfile: Dockerfile
+#      context: ../../
+#
+##    image: docker.io/artemprod/insighter_worker:sha-6116279
+#    container_name: migration_alembic
+#    depends_on:
+#      - postgres_db
+#    env_file:
+#      - .env
+#    environment:
+#      DATABASE_URL: "${POSTGRES_URL}"
+#    command: ["/bin/sh", "/app/deploy/local/database_migration/migration.sh"]
+#    networks:
+#      - local_test
 
 
   redis_cache:
@@ -74,15 +78,17 @@ services:
       - rabbitmq_server
       - redis_cache
       - postgres_db
-      - migration
-    image: docker.io/artemprod/insighter_worker:sha-1dce951
+    build:
+      dockerfile: Dockerfile
+      context: ../../
+#    image: docker.io/artemprod/insighter_worker:sha-6116279
 
     volumes:
       - worker_volume:/var/lib/worker
     restart: always
     env_file:
       - .env
-    command: ["poetry", "run", "python","/app/src/consumption/runer.py"]
+    command: ["poetry", "run", "python","/app/src/consumption/fast_streem_app_run.py"]
     networks:
       - local_test
 
@@ -92,23 +98,23 @@ services:
       - rabbitmq_server
       - redis_cache
       - postgres_db
-      - migration
-
-    image: docker.io/artemprod/insighter_worker:sha-1dce951
+    build:
+      dockerfile: Dockerfile
+      context: ../../
+#    image: docker.io/artemprod/insighter_worker:sha-6116279
 
     volumes:
       - worker_volume:/var/lib/worker
     restart: always
     env_file:
       - .env
-    command: ["poetry", "run", "python","/app/src/api/app/server_app_run.py"]
+    command: ["make", "run_migrations_server"]
     ports:
       - "9192:9192"
     networks:
       - local_test
 
 volumes:
-  migration:
   redis_cache:
   postgres-data:
   nats:

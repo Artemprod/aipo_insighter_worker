@@ -20,4 +20,5 @@ class S3Processor(BaseProcessor):
             service_source=query_message.source,
             assistant_id=query_message.assistant_id,
             file_destination=query_message.s3_path,
+            user_prompt=query_message.user_prompt,
         )

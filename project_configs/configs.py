@@ -42,12 +42,12 @@ class OpenAiConfigs(BaseConfig):
 
 class PostgresDataBaseConfigs(BaseConfig):
     postgres_url: Optional[str]
-    postgres_driver: Optional[str]
-    postgres_user: Optional[str]
-    postgres_password: Optional[str]
-    postgres_host: Optional[str]
-    postgres_port: Optional[str]
-    postgres_database: Optional[str]
+    postgres_driver: Optional[str] = 'asyncpg'
+    postgres_user: Optional[str] = 'postgres'
+    postgres_password: Optional[str] = 'postgres'
+    postgres_host: Optional[str] = 'localhost'
+    postgres_port: Optional[str] = '5432'
+    postgres_database: Optional[str] = 'postgres'
 
 
 class RabitMQConfigs(BaseConfig):

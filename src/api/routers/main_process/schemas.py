@@ -1,6 +1,8 @@
 from typing import Optional
 from pydantic import BaseModel
 
+from src.api.schemas import ServiceSources
+
 
 class BaseMessage(BaseModel):
     unique_id: str
@@ -10,6 +12,7 @@ class BaseMessage(BaseModel):
     source: Optional[str] = None
     user_prompt: Optional[str] = None
     description: Optional[str] = None
+    source: ServiceSources
 
 
 class StartFromYouTubeMessageScheme(BaseMessage):

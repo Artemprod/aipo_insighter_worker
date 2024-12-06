@@ -18,6 +18,7 @@ class HistoryDTO(BaseModel):
 
 class HistoryResultDTO(BaseModel):
     id: Optional[int]
+    unique_id: str
     user_id: int
     summary_text: Optional[str]
     transcribe_text: Optional[str]
