@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
 
+
+
 @dataclass
 class GPTOptions:
     host: str
@@ -11,3 +13,4 @@ class GPTOptions:
     @property
     def openai_url_single_request(self) -> str:
         return f"http://{self.host}:{self.port}{self.api_prefix}{self.single_request_endpoint}"
+

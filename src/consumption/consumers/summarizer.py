@@ -4,10 +4,12 @@ from src.consumption.models.consumption.asssistant import AIAssistantScheme
 from src.services.openai_api_package.chat_gpt_package.client import GPTClient
 
 
+
 class GptSummarizer(ISummarizer):
 
     def __init__(self, gpt_client: GPTClient):
         self.gpt_client = gpt_client
+
 
     async def summarize(self, transcribed_text: str, assistant: AIAssistantScheme) -> str:
         try:
@@ -21,6 +23,7 @@ class GptSummarizer(ISummarizer):
                 f'Произошла ошибка: не удалось выполнить суммаризацию с помощью ChatGPT.\n'
                 f'{str(e)}'
             )
+
 
     async def __call__(self, transcribed_text: str, assistant: AIAssistantScheme) -> str:
         return await self.summarize(transcribed_text, assistant)

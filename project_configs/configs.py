@@ -24,6 +24,12 @@ class GPTConfigs(BaseConfig):
     openai_api_prefix: str
     openai_single_request_endpoint: str
 
+    # use in DocumentSummarizer
+    gpt_model_version: Optional[str] = '3.5-turbo'
+    gpt_max_return_tokens: Optional[int] = 1
+
+
+
 
 class AssemblyConfigs(BaseConfig):
     assembly_api_key: Optional[str] = ''

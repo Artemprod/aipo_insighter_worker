@@ -16,6 +16,7 @@ class GPTClient:
             user_request = {
                 "user_prompt": user_message,
                 "system_prompt": system_message
+
             }
             return await self._request(user_request)
 
