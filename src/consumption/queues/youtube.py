@@ -1,47 +1,24 @@
-from loguru import logger
-
-from src.api.routers.main_process.schemas import StartFromYouTubeMessage
-from src.pipelines.base_pipeline import Pipeline
+from src.api.routers.main_process.schemas import StartFromYouTubeMessageScheme, BaseMessage
+from src.consumption.models.consumption.queues import MessageType
 from src.pipelines.models import PiplineData
+from src.consumption.queues.base_processor import BaseProcessor
 
 
-async def process_message(message):
-    logger.info(f"Received message: {message}")
-    query_message = StartFromYouTubeMessage(**message)
-    logger.info(f"собрал ютуб сообщения для обработки {StartFromYouTubeMessage}")
-    return query_message
+class YouTubeProcessor(BaseProcessor):
+    loader_key = 'youtube'
 
+    @staticmethod
+    def get_query_message(message: MessageType) -> StartFromYouTubeMessageScheme:
+        return StartFromYouTubeMessageScheme(**message)
 
-async def create_pipeline(query_message, utils):
-    pipeline_data = PiplineData(
-        unique_id=query_message.unique_id,
-        initiator_user_id=query_message.user_id,
-        publisher_queue=query_message.publisher_queue,
-        service_source=query_message.source,
-        assistant_id=query_message.assistant_id,
-        file_destination=query_message.youtube_url,
-        user_prompt=query_message.user_prompt,
-    )
-
-    pipeline: Pipeline = Pipeline(
-        repo=utils.get("database_repository"),
-        loader=utils.get("commands")['loader']['youtube'],
-        transcriber=utils.get("commands")['transcriber']['assembly'],
-        summarizer=utils.get("commands")['summarizer']['chat_gpt'],
-
-    )
-    logger.info(f"Ютуб Пайплайн данные {pipeline_data} собраны")
-    logger.info(f"Ютуб Пайплайн {pipeline} собран")
-    return pipeline, pipeline_data
-
-
-async def run_pipeline(pipeline, pipeline_data, message):
-    await pipeline.run(pipeline_data=pipeline_data)
-    logger.info(f"Сообщение {message} обработано")
-
-
-async def on_message_from_youtube_queue(message, utils):
-    query_message = await process_message(message)
-    if query_message:
-        pipeline, pipeline_data = await create_pipeline(query_message, utils)
-        await run_pipeline(pipeline, pipeline_data, message)
+    @staticmethod
+    def get_pipeline_data(query_message: StartFromYouTubeMessageScheme) -> PiplineData:
+        return PiplineData(
+            unique_id=query_message.unique_id,
+            initiator_user_id=query_message.user_id,
+            publisher_queue=query_message.publisher_queue,
+            service_source=query_message.source,
+            assistant_id=query_message.assistant_id,
+            file_destination=query_message.youtube_url,
+            user_prompt=query_message.user_prompt,
+        )

@@ -1,10 +1,12 @@
-from typing import List
+from fastapi import HTTPException
+from fastapi import APIRouter
+from loguru import logger
+from starlette.requests import Request
 
-from fastapi import HTTPException, Request, APIRouter
-from fastapi.responses import JSONResponse
 from fastapi_cache.decorator import cache
 
-from src.api.routers.assistant import schemas
+from src.api.routers.exceptions import NotFoundError, ErrorMessage
+from src.consumption.models.consumption.asssistant import AIAssistantScheme
 
 assistant_router = APIRouter(
     prefix="/assistants",
@@ -12,34 +14,42 @@ assistant_router = APIRouter(
 )
 
 
-@assistant_router.get("/get_all", response_model=List[schemas.AssistantResultDTO])
+@assistant_router.get(
+    "/get_all",
+    response_model=list[AIAssistantScheme],
+    responses={
+        404: {"model": ErrorMessage},
+        500: {"model": ErrorMessage}
+    }
+)
 @cache(expire=60)
-async def get_all_assistants(request: Request):
-    """Получить всех ассистентов"""
+async def get_all_assistants(request: Request) -> list[AIAssistantScheme]:
     try:
-        assistants = await request.app.repositories.assistant_repository.get_all()
-        if assistants is not None:
-            return assistants
-        else:
-            raise HTTPException(status_code=404, detail="assistants not found")
+        return await request.app.repositories.assistant_repository.get_all()
+    except NotFoundError:
+        raise
     except Exception as e:
+        logger.exception(f"An error occurred when getting assistants: {str(e)}")
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
-@assistant_router.get("/api/assistants/get_one", response_model=schemas.AssistantResultDTO)
+@assistant_router.get(
+    "/get_one",
+    response_model=AIAssistantScheme,
+    responses={
+        404: {"model": ErrorMessage},
+        500: {"model": ErrorMessage}
+    }
+)
 @cache(expire=60)
-async def get_one_assistant(request: Request, assistant_id: int):
-    """Получение ассистента по id"""
+async def get_one_assistant(
+        request: Request,
+        assistant_id: int
+) -> AIAssistantScheme:
     try:
-        assistants = await request.app.repositories.assistant_repository.get(assistant_id=assistant_id)
-        if assistants is not None:
-            return assistants
-        else:
-            raise HTTPException(
-                status_code=404,
-                detail={'details': f"No assistant with this id: {assistant_id}, in database"}
-            )
+        return await request.app.repositories.assistant_repository.get(assistant_id=assistant_id)
+    except NotFoundError:
+        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail={'details': f"An error occurred: {str(e)}"}
-        )
+        logger.exception(f"An error occurred when getting assistant with id {assistant_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
