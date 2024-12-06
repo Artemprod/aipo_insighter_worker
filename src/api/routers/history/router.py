@@ -1,3 +1,5 @@
+from typing import Optional
+
 from loguru import logger
 from fastapi import APIRouter, HTTPException
 from starlette.requests import Request

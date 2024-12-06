@@ -12,7 +12,7 @@ class S3Processor(BaseProcessor):
         return StartFromS3Scheme(**message)
 
     @staticmethod
-    def get_pipeline_data(query_message: BaseMessage) -> PiplineData:
+    def get_pipeline_data(query_message: StartFromS3Scheme) -> PiplineData:
         return PiplineData(
             unique_id=query_message.unique_id,
             initiator_user_id=query_message.user_id,

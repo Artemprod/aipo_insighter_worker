@@ -11,10 +11,11 @@ class GptSummarizer(ISummarizer):
         self.gpt_client = gpt_client
 
 
-    async def summarize(self, transcribed_text: str, assistant: AIAssistantScheme) -> str:
+    async def summarize(self, transcribed_text: str, assistant: AIAssistantScheme, user_prompt: str) -> str:
+        user_prompt = user_prompt if user_prompt is not None else " "
         try:
             return await self.gpt_client.complete(
-                user_message=f'{assistant.user_prompt} {transcribed_text}',
+                user_message=f'{assistant.user_prompt} {user_prompt} {transcribed_text}',
                 system_message=assistant.assistant_prompt
             )
 
@@ -25,5 +26,5 @@ class GptSummarizer(ISummarizer):
             )
 
 
-    async def __call__(self, transcribed_text: str, assistant: AIAssistantScheme) -> str:
-        return await self.summarize(transcribed_text, assistant)
+    async def __call__(self, transcribed_text: str, assistant: AIAssistantScheme, user_prompt: str) -> str:
+        return await self.summarize(transcribed_text, assistant, user_prompt)

@@ -12,7 +12,7 @@ class YouTubeProcessor(BaseProcessor):
         return StartFromYouTubeMessageScheme(**message)
 
     @staticmethod
-    def get_pipeline_data(query_message: BaseMessage) -> PiplineData:
+    def get_pipeline_data(query_message: StartFromYouTubeMessageScheme) -> PiplineData:
         return PiplineData(
             unique_id=query_message.unique_id,
             initiator_user_id=query_message.user_id,

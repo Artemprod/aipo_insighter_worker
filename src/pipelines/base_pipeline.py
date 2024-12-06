@@ -60,7 +60,11 @@ class Pipeline(ABC):
         return transcribed_text, int(text_model.id)
 
     async def make_summary(self, transcribed_text: str, assistant: AIAssistantScheme, pipeline_data: PiplineData) -> int:
-        summary = await self.summarizer(transcribed_text=transcribed_text, assistant=assistant)
+        summary = await self.summarizer(
+            transcribed_text=transcribed_text,
+            assistant=assistant,
+            user_prompt=pipeline_data.user_prompt
+        )
         summary_text_model = await self.save_summary_text(summary=summary, pipeline_data=pipeline_data)
         await self.publish_summary_text(summary_text_model, pipeline_data)
         return int(summary_text_model.id)
@@ -90,7 +94,7 @@ class Pipeline(ABC):
         return await self.repo.summary_text_repository.save(
             text=summary,
             user_id=pipeline_data.initiator_user_id,
-            service_source=pipeline_data.service_source,
+            service_source=pipeline_data.service_source.value,
             summary_date=datetime.now()
         )
 

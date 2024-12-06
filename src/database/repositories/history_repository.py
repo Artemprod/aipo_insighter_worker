@@ -2,7 +2,7 @@ import datetime
 from typing import Optional, List
 
 from loguru import logger
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.routers.exceptions import NotFoundError

@@ -16,6 +16,7 @@ assistant_router = APIRouter(
 
 @assistant_router.get(
     "/get_all",
+    response_model=list[AIAssistantScheme],
     responses={
         404: {"model": ErrorMessage},
         500: {"model": ErrorMessage}
@@ -34,6 +35,7 @@ async def get_all_assistants(request: Request) -> list[AIAssistantScheme]:
 
 @assistant_router.get(
     "/get_one",
+    response_model=AIAssistantScheme,
     responses={
         404: {"model": ErrorMessage},
         500: {"model": ErrorMessage}
